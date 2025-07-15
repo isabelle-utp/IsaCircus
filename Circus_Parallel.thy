@@ -88,10 +88,10 @@ abbreviation CSPInnerInterleave :: "('\<alpha> \<Longrightarrow> '\<sigma>) \<Ri
 definition CSPInnerInterleave :: "('\<alpha> \<Longrightarrow> '\<sigma>) \<Rightarrow> ('\<beta> \<Longrightarrow> '\<sigma>) \<Rightarrow> (('\<sigma>,'\<psi>) sfrd) merge" ("N\<^sub>I") where
   [pred]:
   "N\<^sub>I ns1 ns2 = (
-    $ref\<acute> \<subseteq>\<^sub>u ($0:ref \<inter>\<^sub>u $1:ref) \<and>
+    $ref\<acute> \<subseteq> ($0:ref \<inter> $1:ref) \<and>
     $<:tr \<le>\<^sub>u $tr\<acute> \<and>
-    ($tr\<acute> - $<:tr) \<in>\<^sub>u ($0:tr - $<:tr) \<star>\<^bsub>{}\<^esub> ($1:tr - $<:tr) \<and>
-    st\<^sup>> =\<^sub>u ($<:st \<oplus> $0:st on &ns1) \<oplus> $1:st on &ns2)"
+    ($tr\<acute> - $<:tr) \<in> ($0:tr - $<:tr) \<star>\<^bsub>{}\<^esub> ($1:tr - $<:tr) \<and>
+    st\<^sup>> = ($<:st \<oplus> $0:st on &ns1) \<oplus> $1:st on &ns2)"
 *)  
 
 text \<open> An intermediate merge hides the state, whilst a final merge hides the refusals. \<close>
@@ -288,29 +288,29 @@ lemma CSPInnerMerge_form:
   assumes "vwb_lens ns1" "vwb_lens ns2" "P is RR" "Q is RR" 
   shows
   "P \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q = 
-        (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $ref\<acute> \<subseteq>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+        (\<Sqinter> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1).
+             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,[],\<guillemotleft>tt\<^sub>0\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,[],\<guillemotleft>tt\<^sub>1\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($ref\<^sup>> \<subseteq> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
+           \<and> $tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>
+           \<and> $st\<^sup>> = ($st\<^sup>< \<oplus>\<^sub>L \<guillemotleft>st\<^sub>0\<guillemotright> on \<guillemotleft>ns1\<guillemotright>) \<oplus>\<^sub>L \<guillemotleft>st\<^sub>1\<guillemotright> on \<guillemotleft>ns2\<guillemotright>)\<^sub>e)"
   (is "?lhs = ?rhs")
 proof -
-  have P:"(\<exists> {$ok\<acute>,$wait\<acute>} \<bullet> R2(P)) = P" (is "?P' = _")
+  have P:"(\<exists> (ok\<^sup>>,wait\<^sup>>) \<Zspot> R2(P)) = P" (is "?P' = _")
     by (simp add: ex_unrest ex_plus Healthy_if assms unrest closure)
-  have Q:"(\<exists> {$ok\<acute>,$wait\<acute>} \<bullet> R2(Q)) = Q" (is "?Q' = _")
+  have Q:"(\<exists> (ok\<^sup>>,wait\<^sup>>) \<Zspot> R2(Q)) = Q" (is "?Q' = _")
     by (simp add: ex_unrest ex_plus Healthy_if assms unrest closure)
   from assms(1,2)
   have "?P' \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> ?Q' = 
-        (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             ?P'\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> ?Q'\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $ref\<acute> \<subseteq>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
-    apply (simp add: par_by_merge_alt_def, rel_auto, blast)
+        (\<Sqinter> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1). 
+             ?P'\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> ?Q'\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($ref\<^sup>> \<subseteq> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
+           \<and> $tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>
+           \<and> $st\<^sup>> = ($st\<^sup>< \<oplus>\<^sub>L \<guillemotleft>st\<^sub>0\<guillemotright> on \<guillemotleft>ns1\<guillemotright>) \<oplus>\<^sub>L \<guillemotleft>st\<^sub>1\<guillemotright> on \<guillemotleft>ns2\<guillemotright>)\<^sub>e)"
+    apply (simp add: par_by_merge_alt_def, pred_auto, blast)
     apply (rename_tac ok wait tr st ref tr' ref' ref\<^sub>0 ref\<^sub>1 st\<^sub>0 st\<^sub>1 tr\<^sub>0 ok\<^sub>0 tr\<^sub>1 wait\<^sub>0 ok\<^sub>1 wait\<^sub>1)
     apply (rule_tac x="ok" in exI)
     apply (rule_tac x="wait" in exI)
@@ -327,115 +327,115 @@ proof -
     by (simp add: P Q)
 qed
 
+(*** THESE THEOREMS SHOULD BE IN UTP_REL_LAWS ***)
+
+lemma seqr_exists_left:
+  "((\<exists> x\<^sup>< \<Zspot> P) ;; Q) = (\<exists> x\<^sup>< \<Zspot> (P ;; Q))"
+  by (pred_auto)
+
+lemma seqr_exists_right:
+  "(P ;; (\<exists> x\<^sup>> \<Zspot> Q)) = (\<exists> x\<^sup>> \<Zspot> (P ;; Q))"
+  by (pred_auto)
+
 lemma CSPInterMerge_form:
   fixes P Q :: "('\<sigma>,'\<phi>) action"
   assumes "P is RR" "Q is RR" 
   shows
   "P \<lbrakk>cs\<rbrakk>\<^sup>I Q = 
-        (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $ref\<acute> \<subseteq>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>)"
+        (\<Sqinter> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1). 
+             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($ref\<^sup>> \<subseteq> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
+           \<and> $tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>)\<^sub>e)"
   (is "?lhs = ?rhs")
 proof -
-  have "?lhs = (\<exists> st\<^sup>> \<bullet> P \<parallel>\<^bsub>N\<^sub>C 0\<^sub>L cs 0\<^sub>L\<^esub> Q)"
+  have "?lhs = (\<exists> st\<^sup>> \<Zspot> P \<parallel>\<^bsub>N\<^sub>C 0\<^sub>L cs 0\<^sub>L\<^esub> Q)"
     by (simp add: CSPInterMerge_def par_by_merge_def seqr_exists_right)
   also have "... = 
-      (\<exists> st\<^sup>> \<bullet>
-        (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $ref\<acute> \<subseteq>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on \<emptyset>) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on \<emptyset>))"
-    by (simp add: CSPInnerMerge_form pr_var_def assms)
+      (\<exists> st\<^sup>> \<Zspot>
+        (\<Sqinter> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1).
+             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($ref\<^sup>> \<subseteq> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
+           \<and> $tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>
+           \<and> $st\<^sup>> = ($st\<^sup>< \<oplus>\<^sub>L \<guillemotleft>st\<^sub>0\<guillemotright> on \<guillemotleft>0\<^sub>L\<guillemotright>) \<oplus>\<^sub>L \<guillemotleft>st\<^sub>1\<guillemotright> on \<guillemotleft>0\<^sub>L\<guillemotright>)\<^sub>e))"
+    by (simp add: CSPInnerMerge_form assms)
   also have "... = ?rhs"
-    by (rel_blast)
+    by (pred_simp, blast)
   finally show ?thesis .
 qed
   
 lemma CSPFinalMerge_form:
   fixes P Q :: "('\<sigma>,'\<phi>) action"
-  assumes "vwb_lens ns1" "vwb_lens ns2" "P is RR" "Q is RR" "$ref\<acute> \<sharp> P" "$ref\<acute> \<sharp> Q"
+  assumes "vwb_lens ns1" "vwb_lens ns2" "P is RR" "Q is RR" "$ref\<^sup>> \<sharp> P" "$ref\<^sup>> \<sharp> Q"
   shows
   "(P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q) = 
-        (\<^bold>\<exists> (st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             P\<lbrakk>\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+        (\<Sqinter> (st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1). 
+             P\<lbrakk>\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>
+           \<and> $st\<^sup>> = ($st\<^sup>< \<oplus>\<^sub>L \<guillemotleft>st\<^sub>0\<guillemotright> on \<guillemotleft>ns1\<guillemotright>) \<oplus>\<^sub>L \<guillemotleft>st\<^sub>1\<guillemotright> on \<guillemotleft>ns2\<guillemotright>)\<^sub>e)"
   (is "?lhs = ?rhs")  
 proof -
   have "?lhs = (\<exists> ref\<^sup>> \<Zspot> P \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q)"
     by (simp add: CSPFinalMerge_def par_by_merge_def seqr_exists_right)
   also have "... = 
       (\<exists> ref\<^sup>> \<Zspot>
-        (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> Q\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $ref\<acute> \<subseteq>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2))"
-    by (simp add: CSPInnerMerge_form assms)
+        (\<Sqinter> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1). 
+             (\<exists> ref\<^sup>> \<Zspot> P)\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> (\<exists> ref\<^sup>> \<Zspot> Q)\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/ref\<^sup>>,st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($ref\<^sup>> \<subseteq> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
+           \<and> $tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>
+           \<and> $st\<^sup>> = ($st\<^sup>< \<oplus>\<^sub>L \<guillemotleft>st\<^sub>0\<guillemotright> on \<guillemotleft>ns1\<guillemotright>) \<oplus>\<^sub>L \<guillemotleft>st\<^sub>1\<guillemotright> on \<guillemotleft>ns2\<guillemotright>)\<^sub>e))"
+    by (simp add: CSPInnerMerge_form ex_unrest assms)
   also have "... = 
-      (\<exists> ref\<^sup>> \<Zspot>
-        (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             (\<exists> ref\<^sup>> \<Zspot> P)\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>,\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> (\<exists> ref\<^sup>> \<Zspot> Q)\<lbrakk>\<guillemotleft>ref\<^sub>1\<guillemotright>,\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/$ref\<acute>,st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $ref\<acute> \<subseteq>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) - \<guillemotleft>cs\<guillemotright>)
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2))"
-    by (simp add: ex_unrest assms)
-  also have "... = 
-        (\<^bold>\<exists> (st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
-             (\<exists> ref\<^sup>> \<Zspot> P)\<lbrakk>\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/st\<^sup>>,$tr,$tr\<acute>\<rbrakk> \<and> (\<exists> ref\<^sup>> \<Zspot> Q)\<lbrakk>\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/st\<^sup>>,$tr,$tr\<acute>\<rbrakk>
-           \<and> $tr \<le>\<^sub>u $tr\<acute>
-           \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright>
-           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
-           \<and> st\<^sup>> =\<^sub>u ($st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1) \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
-    by (rel_blast)
+        (\<Sqinter> (st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1). 
+             (\<exists> ref\<^sup>> \<Zspot> P)\<lbrakk>\<guillemotleft>st\<^sub>0\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>0\<guillemotright>/st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk> \<and> (\<exists> ref\<^sup>> \<Zspot> Q)\<lbrakk>\<guillemotleft>st\<^sub>1\<guillemotright>,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>/st\<^sup>>,tr\<^sup><,tr\<^sup>>\<rbrakk>
+           \<and> ($tr\<^sup>< \<le> $tr\<^sup>>
+           \<and> tt \<in> tr_par \<guillemotleft>cs\<guillemotright> \<guillemotleft>tt\<^sub>0\<guillemotright> \<guillemotleft>tt\<^sub>1\<guillemotright>
+           \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>
+           \<and> $st\<^sup>> = ($st\<^sup>< \<oplus>\<^sub>L \<guillemotleft>st\<^sub>0\<guillemotright> on \<guillemotleft>ns1\<guillemotright>) \<oplus>\<^sub>L \<guillemotleft>st\<^sub>1\<guillemotright> on \<guillemotleft>ns2\<guillemotright>)\<^sub>e)"
+    by (pred_simp, blast)
   also have "... = ?rhs"
     by (simp add: ex_unrest assms)
   finally show ?thesis .
 qed
 
 lemma CSPInterleave_merge: "M\<^sub>I ns1 ns2 = M\<^sub>C ns1 {} ns2"
-  by (rel_auto)
+  by (pred_auto)
 
 lemma csp_wrR_def:
-  "P wr[cs]\<^sub>C Q = (\<not>\<^sub>r ((\<not>\<^sub>r Q) ;; U0 \<and> P ;; U1 \<and> $<:st\<acute> =\<^sub>u $st \<and> $<:tr\<acute> =\<^sub>u $tr) ;; N\<^sub>C 0\<^sub>L cs 0\<^sub>L ;; R1 true)"
-  by (rel_auto, metis+)
+  "P wr[cs]\<^sub>C Q = (\<not>\<^sub>r ((\<not>\<^sub>r Q) ;; U0 \<and> P ;; U1 \<and> ($<:st\<^sup>> = $st\<^sup>< \<and> $<:tr\<^sup>> = $tr\<^sup><)\<^sub>e) ;; N\<^sub>C 0\<^sub>L cs 0\<^sub>L ;; R1 true)"
+  by (pred_auto, metis+)
 
 lemma csp_wrR_ns_irr:
   "(P wr\<^sub>R(N\<^sub>C ns1 cs ns2) Q) = (P wr[cs]\<^sub>C Q)"
-  by (rel_auto)
+  by (pred_auto)
 
 lemma csp_wrR_CRC_closed [closure]:
   assumes "P is CRR" "Q is CRR"
   shows "P wr[cs]\<^sub>C Q is CRC"
 proof -
-  have "$ref \<sharp> P wr[cs]\<^sub>C Q"
-    by (simp add: csp_wrR_def rpred closure assms unrest)
+  have "$ref\<^sup>< \<sharp> P wr[cs]\<^sub>C Q"
+    by (simp add: csp_wrR_def rpred closure assms unrest unrest_ssubst_expr usubst_eval usubst)
   thus ?thesis
     by (rule CRC_intro, simp_all add: closure assms)
 qed
 
 lemma ref'_unrest_final_merge [unrest]: 
-  "$ref\<acute> \<sharp> P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q"
-  by (rel_auto)
+  "$ref\<^sup>> \<sharp> P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q"
+  by (pred_auto)
 
 lemma inter_merge_CDC_closed [closure]:
   "P \<lbrakk>cs\<rbrakk>\<^sup>I Q is CDC"
-  using le_less_trans by (rel_blast)
+  using le_less_trans by (pred_simp, blast)
 
 lemma CSPInterMerge_alt_def:
-  "P \<lbrakk>cs\<rbrakk>\<^sup>I Q = (\<exists> st\<^sup>> \<bullet> P \<parallel>\<^bsub>N\<^sub>C 0\<^sub>L cs 0\<^sub>L\<^esub> Q)"
+  "P \<lbrakk>cs\<rbrakk>\<^sup>I Q = (\<exists> st\<^sup>> \<Zspot> P \<parallel>\<^bsub>N\<^sub>C 0\<^sub>L cs 0\<^sub>L\<^esub> Q)"
   by (simp add: par_by_merge_def CSPInterMerge_def seqr_exists_right)
 
 lemma CSPFinalMerge_alt_def:
@@ -448,26 +448,26 @@ lemma merge_csp_do_left:
      (\<^bold>\<exists> (ref\<^sub>1, st\<^sub>1, tt\<^sub>1) \<bullet> 
         [s\<^sub>0]\<^sub>S\<^sub>< \<and>
         [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> P \<and>
-        $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-        [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-        st\<^sup>> =\<^sub>u $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+        $ref\<acute> \<subseteq> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+        [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+        st\<^sup>> = $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
      (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
         [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<Phi>(s\<^sub>0,\<sigma>\<^sub>0,t\<^sub>0) \<and>
         [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> P \<and>
-        $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-        $tr \<le>\<^sub>u $tr\<acute> \<and>
-        &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> \<and> st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+        $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+        tr\<^sup>< \<le> tr\<^sup>> \<and>
+        &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> \<and> st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (simp add: CSPInnerMerge_form assms closure)
   also have "... =
      (\<^bold>\<exists> (ref\<^sub>1, st\<^sub>1, tt\<^sub>1) \<bullet> 
         [s\<^sub>0]\<^sub>S\<^sub>< \<and>
         [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> P \<and>
-        $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-        [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-        st\<^sup>> =\<^sub>u $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+        $ref\<acute> \<subseteq> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+        [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+        st\<^sup>> = $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (rel_blast)
   finally show ?thesis .
 qed
@@ -478,9 +478,9 @@ lemma merge_csp_do_right:
      (\<^bold>\<exists> (ref\<^sub>0, st\<^sub>0, tt\<^sub>0) \<bullet> 
         [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> P \<and>
         [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-        $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-        [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-        st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>1 on &ns2 )"
+        $ref\<acute> \<subseteq> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+        [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+        st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>1 on &ns2 )"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<parallel>\<^bsub>N\<^sub>C ns2 cs ns1\<^esub> P"
@@ -500,30 +500,30 @@ lemma merge_csp_enable_right:
              (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0) \<bullet> 
              [s\<^sub>0]\<^sub>S\<^sub>< \<and> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> P \<and>
-             (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in>\<^sub>u \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>0 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and>
-             st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in> \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>0 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and>
+             st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> P \<and>
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> \<E>(s\<^sub>0,t\<^sub>0, E\<^sub>0) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> \<and> st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> \<and> st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (simp add: CSPInnerMerge_form assms closure unrest usubst)
   also have "... = (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> P \<and>
-             (\<lceil>s\<^sub>0\<rceil>\<^sub>S\<^sub>< \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> =\<^sub>u \<lceil>t\<^sub>0\<rceil>\<^sub>S\<^sub>< \<and> (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in>\<^sub>u \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>)) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> \<and> st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             (\<lceil>s\<^sub>0\<rceil>\<^sub>S\<^sub>< \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> = \<lceil>t\<^sub>0\<rceil>\<^sub>S\<^sub>< \<and> (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in> \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>)) \<and>
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> \<and> st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (simp add: csp_enable_def usubst unrest)
   also have "... = (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0) \<bullet> 
              [s\<^sub>0]\<^sub>S\<^sub>< \<and> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> P \<and>
-             (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in>\<^sub>u \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>0 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and>
-             st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in> \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>0 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and>
+             st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (rel_blast)
   finally show ?thesis .
 qed
@@ -534,10 +534,10 @@ lemma merge_csp_enable_left:
              (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0) \<bullet> 
              [s\<^sub>0]\<^sub>S\<^sub>< \<and> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> P \<and>
-             (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in>\<^sub>u \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0  \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>0\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and>
-             st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in> \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0  \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>0\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and>
+             st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = P \<parallel>\<^bsub>N\<^sub>C ns2 cs ns1\<^esub> \<E>(s\<^sub>0,t\<^sub>0,E\<^sub>0)"
@@ -556,30 +556,30 @@ lemma FinalMerge_csp_do_left:
          (\<^bold>\<exists> (st\<^sub>1, t\<^sub>1) \<bullet> 
              [s\<^sub>0]\<^sub>S\<^sub>< \<and>
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>t\<^sub>1\<guillemotright>] \<dagger> P \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>t\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>t\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-             st\<^sup>> =\<^sub>u $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>t\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>t\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+             st\<^sup>> = $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
         (\<^bold>\<exists> (st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<Phi>(s\<^sub>0,\<sigma>\<^sub>0,t\<^sub>0) \<and>
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> RR(\<exists> ref\<^sup>> \<Zspot> P) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> \<and> 
-             st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> \<and> 
+             st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (simp add: CSPFinalMerge_form ex_unrest Healthy_if unrest closure assms)
   also have "... = 
         (\<^bold>\<exists> (st\<^sub>1, tt\<^sub>1) \<bullet> 
              [s\<^sub>0]\<^sub>S\<^sub>< \<and>
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> RR(\<exists> ref\<^sup>> \<Zspot> P) \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-             st\<^sup>> =\<^sub>u $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+             st\<^sup>> = $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (rel_blast)
   also have "... = 
         (\<^bold>\<exists> (st\<^sub>1, t\<^sub>1) \<bullet> 
              [s\<^sub>0]\<^sub>S\<^sub>< \<and>
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>t\<^sub>1\<guillemotright>] \<dagger> P \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>t\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>t\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-             st\<^sup>> =\<^sub>u $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>t\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>t\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+             st\<^sup>> = $st \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>0 on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (simp add: ex_unrest Healthy_if unrest closure assms)
   finally show ?thesis .
 qed
@@ -590,8 +590,8 @@ lemma FinalMerge_csp_do_right:
          (\<^bold>\<exists> (st\<^sub>0, t\<^sub>0) \<bullet> 
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>t\<^sub>0\<guillemotright>] \<dagger> P \<and>
              [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>t\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>t\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-             st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>1 on &ns2)"
+             [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>t\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>t\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+             st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<lparr>&\<^bold>v \<mapsto>\<^sub>s $st\<rparr> \<dagger> \<sigma>\<^sub>1 on &ns2)"
   (is "?lhs = ?rhs")
 proof -
   have "P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) = \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<lbrakk>ns2|cs|ns1\<rbrakk>\<^sup>F P"
@@ -607,18 +607,18 @@ qed
 lemma FinalMerge_csp_do:
   assumes "vwb_lens ns1" "vwb_lens ns2" "ns1 \<bowtie> ns2"
   shows "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F \<Phi>(s\<^sub>2,\<sigma>\<^sub>2,t\<^sub>2) = 
-         ([s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and> [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> [\<langle>\<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2\<rangle>\<^sub>a]\<^sub>S')" 
+         ([s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and> [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> [\<langle>\<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2\<rangle>\<^sub>a]\<^sub>S')" 
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
         (\<^bold>\<exists> (st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<and>
              [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> \<Phi>(s\<^sub>2,\<sigma>\<^sub>2,t\<^sub>2) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> \<and> 
-             st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> \<and> 
+             st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &ns1 \<oplus> \<guillemotleft>st\<^sub>1\<guillemotright> on &ns2)"
     by (simp add: CSPFinalMerge_form unrest closure assms)
   also have "... = 
-        ([s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and> [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> [\<langle>\<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2\<rangle>\<^sub>a]\<^sub>S')"
+        ([s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and> [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> [\<langle>\<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2\<rangle>\<^sub>a]\<^sub>S')"
     by (rel_auto)
   finally show ?thesis .
 qed
@@ -626,15 +626,15 @@ qed
 lemma FinalMerge_csp_do' [rpred]:
   assumes "vwb_lens ns1" "vwb_lens ns2" "ns1 \<bowtie> ns2"
   shows "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F \<Phi>(s\<^sub>2,\<sigma>\<^sub>2,t\<^sub>2) = 
-         (\<^bold>\<exists> trace \<bullet> \<Phi>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>, \<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2, \<guillemotleft>trace\<guillemotright>))"
+         (\<^bold>\<exists> trace \<bullet> \<Phi>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>, \<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2, \<guillemotleft>trace\<guillemotright>))"
   by (simp add: FinalMerge_csp_do assms, rel_auto)
 
 (*
 lemma FinalMerge_csp_do' [rpred]:
   assumes "vwb_lens ns1" "vwb_lens ns2" "ns1 \<bowtie> ns2"
   shows "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F \<Phi>(s\<^sub>2,\<sigma>\<^sub>2,t\<^sub>2) = 
-         (\<Sqinter> trace | \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<lceil>t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2\<rceil>\<^sub>S\<^sub>< \<bullet>
-                    \<Phi>(s\<^sub>1 \<and> s\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>, \<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2, \<guillemotleft>trace\<guillemotright>))"
+         (\<Sqinter> trace | \<guillemotleft>trace\<guillemotright> \<in> \<lceil>t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2\<rceil>\<^sub>S\<^sub>< \<bullet>
+                    \<Phi>(s\<^sub>1 \<and> s\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>, \<sigma>\<^sub>1 [&ns1|&ns2]\<^sub>s \<sigma>\<^sub>2, \<guillemotleft>trace\<guillemotright>))"
   by (simp add: FinalMerge_csp_do assms, rel_auto)
 *)
 
@@ -658,10 +658,10 @@ lemma InterMerge_csp_enable_left:
   assumes "P is RR" "st\<^sup>> \<sharp> P"
   shows "\<E>(s\<^sub>0,t\<^sub>0,E\<^sub>0) \<lbrakk>cs\<rbrakk>\<^sup>I P =         
          (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, t\<^sub>1) \<bullet> 
-             [s\<^sub>0]\<^sub>S\<^sub>< \<and> (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in>\<^sub>u \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright>) \<and>
+             [s\<^sub>0]\<^sub>S\<^sub>< \<and> (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in> \<lceil>E\<^sub>0\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright>) \<and>
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>t\<^sub>1\<guillemotright>] \<dagger> P \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>t\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>t\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t)"
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>0 \<star>\<^bsub>cs\<^esub> \<guillemotleft>t\<^sub>1\<guillemotright> \<and> t\<^sub>0 \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>t\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t)"
   (is "?lhs = ?rhs")
     apply (simp add: CSPInterMerge_form ex_unrest Healthy_if unrest closure assms usubst)
     apply (simp add: csp_enable_def usubst unrest assms closure)
@@ -671,28 +671,28 @@ lemma InterMerge_csp_enable_left:
 lemma InterMerge_csp_enable:
   "\<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<lbrakk>cs\<rbrakk>\<^sup>I \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) = 
         ([s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and>
-         (\<^bold>\<forall> e\<in>\<lceil>(E\<^sub>1 \<inter>\<^sub>u E\<^sub>2 \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((E\<^sub>1 \<union>\<^sub>u E\<^sub>2) - \<guillemotleft>cs\<guillemotright>)\<rceil>\<^sub>S\<^sub>< \<bullet> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u $ref\<acute>) \<and>
-         [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t)" 
+         (\<^bold>\<forall> e\<in>\<lceil>(E\<^sub>1 \<inter> E\<^sub>2 \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((E\<^sub>1 \<union> E\<^sub>2) - \<guillemotleft>cs\<guillemotright>)\<rceil>\<^sub>S\<^sub>< \<bullet> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u $ref\<acute>) \<and>
+         [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t)" 
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
         (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<and>
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>)"
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>)"
     by (simp add: CSPInterMerge_form unrest closure)
   also have "... = 
         (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<and>
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>)"
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>)"
     by (rel_auto)
   also have "... = 
         ( [s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and>
-          (\<^bold>\<forall> e\<in>\<lceil>(E\<^sub>1 \<inter>\<^sub>u E\<^sub>2 \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((E\<^sub>1 \<union>\<^sub>u E\<^sub>2) - \<guillemotleft>cs\<guillemotright>)\<rceil>\<^sub>S\<^sub>< \<bullet> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u $ref\<acute>) \<and>
-          [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t
+          (\<^bold>\<forall> e\<in>\<lceil>(E\<^sub>1 \<inter> E\<^sub>2 \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((E\<^sub>1 \<union> E\<^sub>2) - \<guillemotleft>cs\<guillemotright>)\<rceil>\<^sub>S\<^sub>< \<bullet> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u $ref\<acute>) \<and>
+          [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t
          )"  
     apply (rel_auto)
     apply (rename_tac tr st tr' ref')
@@ -706,42 +706,42 @@ qed
 
 lemma InterMerge_csp_enable' [rpred]:
   "\<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<lbrakk>cs\<rbrakk>\<^sup>I \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) = 
-          (\<^bold>\<exists> trace \<bullet> \<E>( s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>
+          (\<^bold>\<exists> trace \<bullet> \<E>( s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>
                       , \<guillemotleft>trace\<guillemotright>
-                      , (E\<^sub>1 \<inter>\<^sub>u E\<^sub>2 \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright>) \<union>\<^sub>u ((E\<^sub>1 \<union>\<^sub>u E\<^sub>2) - \<guillemotleft>cs\<guillemotright>)))"
+                      , (E\<^sub>1 \<inter> E\<^sub>2 \<inter> \<guillemotleft>cs\<guillemotright>) \<union> ((E\<^sub>1 \<union> E\<^sub>2) - \<guillemotleft>cs\<guillemotright>)))"
   by (simp add: InterMerge_csp_enable, rel_auto)
 
 lemma InterMerge_csp_enable_csp_do [rpred]:
   "\<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<lbrakk>cs\<rbrakk>\<^sup>I \<Phi>(s\<^sub>2,\<sigma>\<^sub>2,t\<^sub>2) = 
-  (\<^bold>\<exists> trace \<bullet> \<E>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>,\<guillemotleft>trace\<guillemotright>,E\<^sub>1 - \<guillemotleft>cs\<guillemotright>))" 
+  (\<^bold>\<exists> trace \<bullet> \<E>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>,\<guillemotleft>trace\<guillemotright>,E\<^sub>1 - \<guillemotleft>cs\<guillemotright>))" 
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
         (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1, tt\<^sub>0, tt\<^sub>1) \<bullet> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<and>
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>1\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>1\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>1\<guillemotright>] \<dagger> \<Phi>(s\<^sub>2,\<sigma>\<^sub>2,t\<^sub>2) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             $tr \<le>\<^sub>u $tr\<acute> \<and> &tt \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>)"
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             tr\<^sup>< \<le> tr\<^sup>> \<and> &tt \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>tt\<^sub>1\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>)"
     by (simp add: CSPInterMerge_form unrest closure)
   also have "... = 
         (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, tt\<^sub>0) \<bullet> 
              [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> \<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) \<and>
              [s\<^sub>2]\<^sub>S\<^sub>< \<and>
-             $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-             [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t)"
+             $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+             [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t)"
     by (rel_auto) 
   also have "... = ([s\<^sub>1 \<and> s\<^sub>2]\<^sub>S\<^sub>< \<and> (\<^bold>\<forall> e\<in>\<lceil>(E\<^sub>1 - \<guillemotleft>cs\<guillemotright>)\<rceil>\<^sub>S\<^sub>< \<bullet> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u $ref\<acute>) \<and>
-                    [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t)"
+                    [\<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t)"
     by (rel_auto)
        (metis Diff_iff Diff_subset Int_Diff Un_Diff_Int semilattice_inf_class.inf.idem semilattice_sup_class.sup.absorb_iff1 semilattice_sup_class.sup.commute set_eq_subset) 
-  also have "... = (\<^bold>\<exists> trace \<bullet> \<E>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>, \<guillemotleft>trace\<guillemotright>, E\<^sub>1 - \<guillemotleft>cs\<guillemotright>))"
+  also have "... = (\<^bold>\<exists> trace \<bullet> \<E>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>, \<guillemotleft>trace\<guillemotright>, E\<^sub>1 - \<guillemotleft>cs\<guillemotright>))"
     by (rel_auto)
   finally show ?thesis .
 qed
 
 lemma InterMerge_csp_do_csp_enable [rpred]:
   "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<lbrakk>cs\<rbrakk>\<^sup>I \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) = 
-   (\<^bold>\<exists> trace \<bullet> \<E>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>2 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>,\<guillemotleft>trace\<guillemotright>,E\<^sub>2 - \<guillemotleft>cs\<guillemotright>))" 
+   (\<^bold>\<exists> trace \<bullet> \<E>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> t\<^sub>1 \<star>\<^bsub>cs\<^esub> t\<^sub>2 \<and> t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>2 \<restriction> \<guillemotleft>cs\<guillemotright>,\<guillemotleft>trace\<guillemotright>,E\<^sub>2 - \<guillemotleft>cs\<guillemotright>))" 
   (is "?lhs = ?rhs")
 proof -
   have "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) \<lbrakk>cs\<rbrakk>\<^sup>I \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) = \<E>(s\<^sub>2,t\<^sub>2,E\<^sub>2) \<lbrakk>cs\<rbrakk>\<^sup>I \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1)"
@@ -796,7 +796,7 @@ lemma CSPInterMerge_shEx_right [rpred]:
 lemma par_by_merge_seq_remove: "(P \<parallel>\<^bsub>M ;; R\<^esub> Q) = (P \<parallel>\<^bsub>M\<^esub> Q) ;; R"
   by (simp add: par_by_merge_seq_add[THEN sym])
 
-lemma utrace_leq: "(x \<le>\<^sub>u y) = (\<^bold>\<exists> z \<bullet> y =\<^sub>u x ^\<^sub>u \<guillemotleft>z\<guillemotright>)"
+lemma utrace_leq: "(x \<le>\<^sub>u y) = (\<^bold>\<exists> z \<bullet> y = x ^\<^sub>u \<guillemotleft>z\<guillemotright>)"
   by (rel_auto)
 
 lemma trace_pred_R1_true: "[P(trace)]\<^sub>t ;; R1 true =  [(\<^bold>\<exists> tt\<^sub>0 \<bullet> \<guillemotleft>tt\<^sub>0\<guillemotright> \<le>\<^sub>u \<guillemotleft>trace\<guillemotright> \<and> P(tt\<^sub>0))]\<^sub>t"
@@ -807,33 +807,33 @@ lemma trace_pred_R1_true: "[P(trace)]\<^sub>t ;; R1 true =  [(\<^bold>\<exists> 
 
 lemma wrC_csp_do_init [wp]:
   "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) wr[cs]\<^sub>C \<I>(s\<^sub>2, t\<^sub>2) = 
-   (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1  \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>, \<guillemotleft>tt\<^sub>1\<guillemotright>))"
+   (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1  \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>, \<guillemotleft>tt\<^sub>1\<guillemotright>))"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
         (\<not>\<^sub>r (\<^bold>\<exists> (ref\<^sub>0, st\<^sub>0, tt\<^sub>0) \<bullet> 
               [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> (\<not>\<^sub>r \<I>(s\<^sub>2, t\<^sub>2)) \<and>
               [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-              $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-              [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
-              st\<^sup>> =\<^sub>u $st) ;; R1 true)"
+              $ref\<acute> \<subseteq> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+              [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> 
+              st\<^sup>> = $st) ;; R1 true)"
     by (simp add: wrR_def par_by_merge_seq_remove merge_csp_do_right pr_var_def closure Healthy_if rpred, rel_auto)
   also have "... =
         (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>0 \<bullet> (\<lceil>s\<^sub>2\<rceil>\<^sub>S\<^sub>< \<and> \<lceil>t\<^sub>2\<rceil>\<^sub>S\<^sub>< \<le>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>) \<and> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-                     [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
+                     [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
     by (rel_auto)
   also have "... =
-        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>0 \<bullet> (\<lceil>s\<^sub>2\<rceil>\<^sub>S\<^sub>< \<and> (\<^bold>\<exists> tt\<^sub>1 \<bullet> \<guillemotleft>tt\<^sub>0\<guillemotright> =\<^sub>u \<lceil>t\<^sub>2\<rceil>\<^sub>S\<^sub>< ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>)) \<and> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-                     [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
+        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>0 \<bullet> (\<lceil>s\<^sub>2\<rceil>\<^sub>S\<^sub>< \<and> (\<^bold>\<exists> tt\<^sub>1 \<bullet> \<guillemotleft>tt\<^sub>0\<guillemotright> = \<lceil>t\<^sub>2\<rceil>\<^sub>S\<^sub>< ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>)) \<and> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
+                     [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
     by (simp add: utrace_leq)
   also have "... =
-        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>1 \<bullet> [s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
+        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>1 \<bullet> [s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
     by (rel_auto)
   also have "... =
-        (\<^bold>\<forall> tt\<^sub>1 \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t ;; R1 true))"
+        (\<^bold>\<forall> tt\<^sub>1 \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t ;; R1 true))"
     by (rel_auto)
   also have "... =
-        (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<le>\<^sub>u \<guillemotleft>trace\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t))"
+        (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<le>\<^sub>u \<guillemotleft>trace\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t))"
     by (simp add: trace_pred_R1_true, rel_auto)
   also have "... = ?rhs"
     by (rel_auto)
@@ -842,7 +842,7 @@ qed
 
 lemma wrC_csp_do_false [wp]:
   "\<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) wr[cs]\<^sub>C false = 
-  (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>))"
+  (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>))"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) wr[cs]\<^sub>C \<I>(true, \<guillemotleft>[]\<guillemotright>)"
@@ -856,34 +856,34 @@ lemma wrC_csp_enable_init [wp]:
   fixes t\<^sub>1  t\<^sub>2 :: "('a list, 'b) uexpr"
   shows
   "\<E>(s\<^sub>1,t\<^sub>1,E\<^sub>1) wr[cs]\<^sub>C \<I>(s\<^sub>2, t\<^sub>2) = 
-   (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1  \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>, \<guillemotleft>tt\<^sub>1\<guillemotright>))"
+   (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1  \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>, \<guillemotleft>tt\<^sub>1\<guillemotright>))"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = 
         (\<not>\<^sub>r (\<^bold>\<exists> (ref\<^sub>0, ref\<^sub>1, st\<^sub>0, st\<^sub>1 :: 'b,
            tt\<^sub>0) \<bullet> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
                    [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> (\<not>\<^sub>r \<I>(s\<^sub>2,t\<^sub>2)) \<and>
-                   (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in>\<^sub>u \<lceil>E\<^sub>1\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
-                   $ref\<acute> \<subseteq>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter>\<^sub>u \<guillemotleft>cs\<guillemotright> \<union>\<^sub>u (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
-                   [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> st\<^sup>> =\<^sub>u $st) ;;\<^sub>h
+                   (\<^bold>\<forall> e \<bullet> \<guillemotleft>e\<guillemotright> \<in> \<lceil>E\<^sub>1\<rceil>\<^sub>S\<^sub>< \<Rightarrow> \<guillemotleft>e\<guillemotright> \<notin>\<^sub>u \<guillemotleft>ref\<^sub>1\<guillemotright>) \<and>
+                   $ref\<acute> \<subseteq> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<union> \<guillemotleft>ref\<^sub>1\<guillemotright>) \<inter> \<guillemotleft>cs\<guillemotright> \<union> (\<guillemotleft>ref\<^sub>0\<guillemotright> \<inter> \<guillemotleft>ref\<^sub>1\<guillemotright> - \<guillemotleft>cs\<guillemotright>) \<and>
+                   [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t \<and> st\<^sup>> = $st) ;;\<^sub>h
           R1 true)"
     by (simp add: wrR_def par_by_merge_seq_remove merge_csp_enable_right pr_var_def closure Healthy_if rpred, rel_auto)
   also have "... =
         (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>0 \<bullet> (\<lceil>s\<^sub>2\<rceil>\<^sub>S\<^sub>< \<and> \<lceil>t\<^sub>2\<rceil>\<^sub>S\<^sub>< \<le>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>) \<and> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-                     [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
+                     [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
     by (rel_blast)
   also have "... =
-        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>0 \<bullet> (\<lceil>s\<^sub>2\<rceil>\<^sub>S\<^sub>< \<and> (\<^bold>\<exists> tt\<^sub>1 \<bullet> \<guillemotleft>tt\<^sub>0\<guillemotright> =\<^sub>u \<lceil>t\<^sub>2\<rceil>\<^sub>S\<^sub>< ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>)) \<and> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
-                     [\<guillemotleft>trace\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
+        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>0 \<bullet> (\<lceil>s\<^sub>2\<rceil>\<^sub>S\<^sub>< \<and> (\<^bold>\<exists> tt\<^sub>1 \<bullet> \<guillemotleft>tt\<^sub>0\<guillemotright> = \<lceil>t\<^sub>2\<rceil>\<^sub>S\<^sub>< ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>)) \<and> [s\<^sub>1]\<^sub>S\<^sub>< \<and>
+                     [\<guillemotleft>trace\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
     by (simp add: utrace_leq)
   also have "... =
-        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>1 \<bullet> [s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
+        (\<not>\<^sub>r (\<^bold>\<exists> tt\<^sub>1 \<bullet> [s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t) ;; R1 true)"
     by (rel_auto)
   also have "... =
-        (\<^bold>\<forall> tt\<^sub>1 \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t ;; R1 true))"
+        (\<^bold>\<forall> tt\<^sub>1 \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>trace\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t ;; R1 true))"
     by (rel_auto)
   also have "... =
-        (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<le>\<^sub>u \<guillemotleft>trace\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<in>\<^sub>u (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>]\<^sub>t))"
+        (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<not>\<^sub>r ([s\<^sub>1 \<and> s\<^sub>2 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<le>\<^sub>u \<guillemotleft>trace\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<in> (t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright>) \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> t\<^sub>2 ^\<^sub>u \<guillemotleft>tt\<^sub>1\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>]\<^sub>t))"
     by (simp add: trace_pred_R1_true, rel_auto)
   also have "... = ?rhs"
     by (rel_auto)
@@ -892,7 +892,7 @@ qed
 
 lemma wrC_csp_enable_false [wp]:
   "\<E>(s\<^sub>1,t\<^sub>1,E) wr[cs]\<^sub>C false = 
-  (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u t\<^sub>1 \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>))"
+  (\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(s\<^sub>1 \<and> \<guillemotleft>tt\<^sub>1\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> t\<^sub>1 \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = t\<^sub>1 \<restriction> \<guillemotleft>cs\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>))"
   (is "?lhs = ?rhs")
 proof -
   have "?lhs = \<E>(s\<^sub>1,t\<^sub>1,E) wr[cs]\<^sub>C \<I>(true, \<guillemotleft>[]\<guillemotright>)"
@@ -1051,7 +1051,7 @@ lemma csp_do_triv_merge:
   assumes "P is CRF"
   shows "P \<lbrakk>\<Sigma>|{}|\<emptyset>\<rbrakk>\<^sup>F \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = P" (is "?lhs = ?rhs")
 proof -
-  have "?lhs = (\<^bold>\<exists> (st\<^sub>0, t\<^sub>0) \<bullet> [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>t\<^sub>0\<guillemotright>] \<dagger> CRF(P) \<and> [true]\<^sub>S\<^sub>< \<and> [\<guillemotleft>trace\<guillemotright> =\<^sub>u \<guillemotleft>t\<^sub>0\<guillemotright>]\<^sub>t \<and> st\<^sup>> =\<^sub>u $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &\<^bold>v \<oplus> \<guillemotleft>id\<guillemotright>($st)\<^sub>a on \<emptyset>)"
+  have "?lhs = (\<^bold>\<exists> (st\<^sub>0, t\<^sub>0) \<bullet> [st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>t\<^sub>0\<guillemotright>] \<dagger> CRF(P) \<and> [true]\<^sub>S\<^sub>< \<and> [\<guillemotleft>trace\<guillemotright> = \<guillemotleft>t\<^sub>0\<guillemotright>]\<^sub>t \<and> st\<^sup>> = $st \<oplus> \<guillemotleft>st\<^sub>0\<guillemotright> on &\<^bold>v \<oplus> \<guillemotleft>id\<guillemotright>($st)\<^sub>a on \<emptyset>)"
     by (simp add: FinalMerge_csp_do_right assms closure unrest Healthy_if, rel_auto)
   also have "... = CRF(P)"
     by (rel_auto)
@@ -1065,8 +1065,8 @@ lemma csp_do_triv_wr:
 proof -
   have "?lhs = (\<not>\<^sub>r (\<^bold>\<exists> (ref\<^sub>0, st\<^sub>0, tt\<^sub>0) \<bullet> 
                    [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> (\<exists> $ref\<acute>;st\<^sup>> \<bullet> RR(\<not>\<^sub>r P)) \<and>
-                    $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright> \<and> [\<guillemotleft>trace\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>]\<^sub>t \<and> 
-                    st\<^sup>> =\<^sub>u $st) ;; R1 true)"
+                    $ref\<acute> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright> \<and> [\<guillemotleft>trace\<guillemotright> = \<guillemotleft>tt\<^sub>0\<guillemotright>]\<^sub>t \<and> 
+                    st\<^sup>> = $st) ;; R1 true)"
       by (simp add: wrR_def par_by_merge_seq_remove rpred merge_csp_do_right ex_unrest Healthy_if pr_var_def closure assms unrest usubst, rel_auto)
   also have "... = (\<not>\<^sub>r (\<exists> $ref\<acute>;st\<^sup>> \<bullet> RR(\<not>\<^sub>r P)) ;; R1 true)"
     by (rel_auto, meson order_refl)
@@ -1079,12 +1079,12 @@ qed
 
 lemma C2_form:
   assumes "P is NCSP"
-  shows "C2(P) = \<^bold>R\<^sub>s (pre\<^sub>R P \<turnstile> (\<^bold>\<exists> ref\<^sub>0 \<bullet> peri\<^sub>R P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright>) \<diamondop> post\<^sub>R P)"
+  shows "C2(P) = \<^bold>R\<^sub>s (pre\<^sub>R P \<turnstile> (\<^bold>\<exists> ref\<^sub>0 \<bullet> peri\<^sub>R P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright>) \<diamondop> post\<^sub>R P)"
 proof -
   have 1:"\<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) wr[{}]\<^sub>C pre\<^sub>R P = pre\<^sub>R P" (is "?lhs = ?rhs")
     by (simp add: csp_do_triv_wr closure assms)
   have 2: "(pre\<^sub>R P \<Rightarrow>\<^sub>r peri\<^sub>R P) \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = 
-           (\<^bold>\<exists> ref\<^sub>0 \<bullet> (peri\<^sub>R P)\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright>)" (is "?lhs = ?rhs")
+           (\<^bold>\<exists> ref\<^sub>0 \<bullet> (peri\<^sub>R P)\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright>)" (is "?lhs = ?rhs")
   proof -
     have "?lhs = peri\<^sub>R P \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>)"
       by (simp add: SRD_peri_under_pre closure assms unrest)
@@ -1093,10 +1093,10 @@ proof -
     also have "... = 
          (\<exists> st\<^sup>> \<bullet> \<^bold>\<exists> (ref\<^sub>0, st\<^sub>0, tt\<^sub>0) \<bullet> 
             [$ref\<acute> \<mapsto>\<^sub>s \<guillemotleft>ref\<^sub>0\<guillemotright>, st\<^sup>> \<mapsto>\<^sub>s \<guillemotleft>st\<^sub>0\<guillemotright>, $tr \<mapsto>\<^sub>s \<guillemotleft>[]\<guillemotright>, $tr\<acute> \<mapsto>\<^sub>s \<guillemotleft>tt\<^sub>0\<guillemotright>] \<dagger> (\<exists> st\<^sup>> \<bullet> RR(peri\<^sub>R P)) \<and>
-             $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright> \<and> [\<guillemotleft>trace\<guillemotright> =\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright>]\<^sub>t \<and> st\<^sup>> =\<^sub>u $st)"
+             $ref\<acute> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright> \<and> [\<guillemotleft>trace\<guillemotright> = \<guillemotleft>tt\<^sub>0\<guillemotright>]\<^sub>t \<and> st\<^sup>> = $st)"
       by (simp add: merge_csp_do_right pr_var_def assms Healthy_if closure rpred unrest ex_unrest, rel_auto)
     also have "... = 
-         (\<^bold>\<exists> ref\<^sub>0 \<bullet> (\<exists> st\<^sup>> \<bullet> RR(peri\<^sub>R P))\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright>)"
+         (\<^bold>\<exists> ref\<^sub>0 \<bullet> (\<exists> st\<^sup>> \<bullet> RR(peri\<^sub>R P))\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright>)"
       by (rel_auto)
     also have "... = ?rhs"
       by (simp add: closure ex_unrest Healthy_if unrest assms)
@@ -1109,7 +1109,7 @@ proof -
     have "C2(P) = \<^bold>R\<^sub>s (\<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) wr[{}]\<^sub>C pre\<^sub>R P \<turnstile>
           (pre\<^sub>R P \<Rightarrow>\<^sub>r peri\<^sub>R P) \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) \<diamondop> (pre\<^sub>R P \<Rightarrow>\<^sub>r post\<^sub>R P) \<lbrakk>\<Sigma>|{}|\<emptyset>\<rbrakk>\<^sup>F \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>))"
       by (simp add: C2_def, rdes_simp cls: assms)
-    also have "... = \<^bold>R\<^sub>s (pre\<^sub>R P \<turnstile> (\<^bold>\<exists> ref\<^sub>0 \<bullet> peri\<^sub>R P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq>\<^sub>u \<guillemotleft>ref\<^sub>0\<guillemotright>) \<diamondop> post\<^sub>R P)"
+    also have "... = \<^bold>R\<^sub>s (pre\<^sub>R P \<turnstile> (\<^bold>\<exists> ref\<^sub>0 \<bullet> peri\<^sub>R P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<acute>\<rbrakk> \<and> $ref\<acute> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright>) \<diamondop> post\<^sub>R P)"
       by (simp add: 1 2 3)
     finally show ?thesis .
   qed
@@ -1622,7 +1622,7 @@ lemma Chaos_par_zero:
   assumes "P is NCSP" "P is CACC" "ns1 \<bowtie> ns2"
   shows "Chaos \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> P = Chaos"
 proof -
-  have pprop: "(\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(\<guillemotleft>tt\<^sub>1\<guillemotright> \<in>\<^sub>u \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>[]\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright> =\<^sub>u \<guillemotleft>[]\<guillemotright> \<restriction>\<^sub>u \<guillemotleft>cs\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>)) = false"
+  have pprop: "(\<^bold>\<forall> (tt\<^sub>0, tt\<^sub>1) \<bullet> \<I>(\<guillemotleft>tt\<^sub>1\<guillemotright> \<in> \<guillemotleft>tt\<^sub>0\<guillemotright> \<star>\<^bsub>cs\<^esub> \<guillemotleft>[]\<guillemotright> \<and> \<guillemotleft>tt\<^sub>0\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright> = \<guillemotleft>[]\<guillemotright> \<restriction> \<guillemotleft>cs\<guillemotright>,\<guillemotleft>tt\<^sub>1\<guillemotright>)) = false"
     by (rel_simp, auto simp add: tr_par_empty)
        (metis append_Nil2 seq_filter_Nil takeWhile.simps(1))
 
