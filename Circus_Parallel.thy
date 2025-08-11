@@ -6,6 +6,14 @@ begin
 
 subsection \<open> Trace Merge \<close>
 
+fun tr_inter ::
+  "'\<theta> list \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list set" (infixr "|||\<^sub>t" 100) where
+"tr_inter [] [] = {[]}" |
+"tr_inter (e # t) [] = ({[e]} \<^sup>\<frown> (tr_inter t []))" |
+"tr_inter [] (e # t) = ({[e]} \<^sup>\<frown> (tr_inter [] t))" |
+"tr_inter (e\<^sub>1 # t\<^sub>1) (e\<^sub>2 # t\<^sub>2) =
+  ({[e\<^sub>1]} \<^sup>\<frown> (tr_inter t\<^sub>1 (e\<^sub>2 # t\<^sub>2)) \<union> {[e\<^sub>2]} \<^sup>\<frown> (tr_inter (e\<^sub>1 # t\<^sub>1) t\<^sub>2))"
+
 fun tr_par ::
   "'\<theta> set \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list set" where
 "tr_par cs [] [] = {[]}" |
@@ -31,9 +39,12 @@ fun tr_par ::
           {[e\<^sub>1]} \<^sup>\<frown> (tr_par cs t\<^sub>1 (e\<^sub>2 # t\<^sub>2)) \<union>
           {[e\<^sub>2]} \<^sup>\<frown> (tr_par cs (e\<^sub>1 # t\<^sub>1) t\<^sub>2))"
 
-abbreviation tr_inter :: "'\<theta> list \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list set" (infixr "|||\<^sub>t" 100) where
-"x |||\<^sub>t y \<equiv> tr_par {} x y"
+lemma tr_inter_Nil [simp]: "[] |||\<^sub>t x = {x}" "x |||\<^sub>t [] = {x}"
+  by (induct x; simp)+
 
+lemma tr_inter_eq_par: "x |||\<^sub>t y \<equiv> tr_par {} x y"
+  by (induct rule: tr_inter.induct, auto)
+  
 subsection \<open> Trace Merge Lemmas \<close>
 
 lemma tr_par_empty:
@@ -60,7 +71,34 @@ apply (blast)
 done
 
 lemma tr_inter_sym: "x |||\<^sub>t y = y |||\<^sub>t x"
-  by (simp add: tr_par_sym)
+  by (simp add: tr_inter_eq_par tr_par_sym)
+
+lemma Nil_in_inter: "[] \<in> tr_inter x y \<Longrightarrow> x = [] \<or> y = []"
+  by (induct x; induct y; auto)
+
+lemma Nil_in_interE: 
+  assumes "[] \<in> tr_inter x y" "x = [] \<Longrightarrow> P" "y = [] \<Longrightarrow> P"
+  shows "P"
+  using Nil_in_inter assms(1,2,3) by blast
+
+lemma "x \<in> t1 |||\<^sub>t t2 \<Longrightarrow> y \<in> t3 |||\<^sub>t x \<Longrightarrow> \<exists>z\<in>t2 |||\<^sub>t t3. y \<in> t1 |||\<^sub>t z"
+  apply (induct rule: tr_inter.induct)
+  apply (auto elim!: Nil_in_interE simp add: tr_inter_sym)
+  apply (erule Nil_in_interE)
+   apply (induct t1 arbitrary: t2 t3 x y)
+   apply (auto simp add: tr_par_sym)
+  subgoal for a t1 t2 t3 x y
+  apply (induct t2)
+     apply auto
+    apply (case_tac "aa = a")
+     apply auto
+       apply (induct t3)
+    apply auto
+
+lemma "\<Union> (tr_par {} t3 ` tr_par {} t1 t2) = \<Union> (tr_par {} t1 ` tr_par {} t2 t3)"
+  apply auto
+  apply (induct t1)
+  apply (auto simp add: tr_par_sym)
 
 no_notation
   Set.member  (\<open>'(:')\<close>) and
@@ -234,8 +272,6 @@ lemma CSPFinalMerge_right_false [rpred]: "P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F
 
 lemma CSPFinalMerge_left_false [rpred]: "false \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F P = false"
   by (simp add: CSPFinalMerge_def)
-
-term par_by_merge
 
 lemma CSPInnerMerge_commute:
   assumes "ns1 \<bowtie> ns2"
@@ -543,6 +579,7 @@ proof -
 text \<open> The result of merge two terminated stateful traces is to (1) require both state preconditions
   hold, (2) merge the traces using, and (3) merge the state using a parallel assignment. \<close>
 
+(*
 lemma FinalMerge_csp_do_left:
   assumes "vwb_lens ns1" "vwb_lens ns2" "ns1 \<bowtie> ns2" "P is RR" "$ref\<^sup>> \<sharp> P"
   shows "\<Phi>(s\<^sub>0,\<sigma>\<^sub>0,t\<^sub>0) \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F P =         
@@ -576,7 +613,7 @@ proof -
     by (simp add: ex_unrest Healthy_if unrest closure assms)
   finally show ?thesis .
 qed
-      
+
 lemma FinalMerge_csp_do_right:
   assumes "vwb_lens ns1" "vwb_lens ns2" "ns1 \<bowtie> ns2" "P is RR" "$ref\<^sup>> \<sharp> P"
   shows "P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F \<Phi>(s\<^sub>1,\<sigma>\<^sub>1,t\<^sub>1) =         
