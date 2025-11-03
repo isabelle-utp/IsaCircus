@@ -16,11 +16,15 @@ lift_definition assigns_action :: "'s subst \<Rightarrow> ('e, 's) action" is As
 lift_definition seq_action :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "(;;)" 
   by (simp add: closure) 
 
+adhoc_overloading useq == seq_action
+
 lift_definition cond_action :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
   is "\<lambda> P b Q. P \<triangleleft> b \<triangleright>\<^sub>R Q" by (simp add: closure)
 
-lift_definition extchoice_action :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "(\<box>)"
+lift_definition extchoice_action :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" (infixl "\<box>" 59) is "\<lambda> P Q. P \<box> Q"
   by (simp add: closure)
+
+no_notation extChoice (infixl "\<box>" 59)
 
 lift_definition prefix_action :: "('e, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is PrefixCSP
   by (simp add: closure)
@@ -39,7 +43,7 @@ lift_definition inf_action :: "('a, 'b) action \<Rightarrow> ('a, 'b) action \<R
   is "join (utp_order NCSP)" by simp 
 
 instance 
-  apply (intro_classes; transfer)
+   apply (intro_classes; transfer)
   apply simp_all
   apply (metis ref_preorder.dual_order.strict_iff_not)
   apply (meson csp_theory.join_left)
@@ -64,8 +68,6 @@ instance
   done
 
 end
-
-term Lattice.inf
 
 instantiation action :: (type, type) complete_lattice
 begin
@@ -107,5 +109,24 @@ end
 abbreviation Miracle :: "('a, 'b) action" where "Miracle \<equiv> bot_class.bot"
 
 abbreviation Chaos :: "('a, 'b) action" where "Chaos \<equiv> top_class.top"
+
+lemma "(prefix_action e P) ;; Q = prefix_action e (P ;; Q)"
+  apply transfer
+  apply (simp add: NCSP_implies_CSP PrefixCSP_seq)
+  done
+
+lemma
+  fixes Q R S :: "('e, 's) action"
+  assumes "S \<sqsubseteq> Q" "S \<sqsubseteq> R"
+  shows "S \<sqsubseteq> Q \<box> R"
+proof -
+  have "S \<box> S = S"
+    apply transfer
+    apply (simp add: NCSP_implies_CSP extChoice_idem)
+    done
+  from assms have "S \<box> S \<sqsubseteq> Q \<box> R" 
+    apply (simp add: ref_by_action_def)
+    apply transfer
+    oops
 
 end
