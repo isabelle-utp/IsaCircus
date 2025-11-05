@@ -24,10 +24,23 @@ lift_definition cond_action :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<
 lift_definition extchoice_action :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" (infixl "\<box>" 59) is "\<lambda> P Q. P \<box> Q"
   by (simp add: closure)
 
+lift_definition EXTCHOICE_action :: "'a set \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is "EXTCHOICE"
+  by (simp add: closure)
+
 no_notation extChoice (infixl "\<box>" 59)
 
 lift_definition prefix_action :: "('e, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is PrefixCSP
   by (simp add: closure)
+
+lift_definition guardedchoice_action :: "'e set \<Rightarrow> ('e \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is GuardedChoiceCSP
+  by (simp add: closure)
+                                                                             
+lift_definition guard_action :: "(bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is GuardCSP
+  by (metis NCSP_Guard SEXP_def)               
+
+lemma "P is NCSP \<Longrightarrow> GuardCSP b P is NCSP"
+  by (metis NCSP_Guard SEXP_def) 
+  
 
 instantiation action :: (type, type) lattice
 begin
@@ -110,11 +123,27 @@ abbreviation Miracle :: "('a, 'b) action" where "Miracle \<equiv> bot_class.bot"
 
 abbreviation Chaos :: "('a, 'b) action" where "Chaos \<equiv> top_class.top"
 
+subsection \<open> Normalisation Laws \<close>
+
+(*Lemma 1: Sequential Prefix Normalisation*)
 lemma "(prefix_action e P) ;; Q = prefix_action e (P ;; Q)"
   apply transfer
   apply (simp add: NCSP_implies_CSP PrefixCSP_seq)
   done
 
+
+(*Lemma 4: Binary Guarded External Choice Normalisation*)
+lemma "(guard_action b P) \<box> (guard_action c Q) = 
+        EXTCHOICE_action {0,1} (\<lambda> x. if x = 0 then (guard_action b P) else (guard_action c P))"
+  apply transfer
+  sorry
+
+
+
+subsection \<open> Reduction Laws \<close>
+
+
+(*Lemma 11: External Choice Reduction*)
 lemma
   fixes Q R S :: "('e, 's) action"
   assumes "S \<sqsubseteq> Q" "S \<sqsubseteq> R"
@@ -128,5 +157,8 @@ proof -
     apply (simp add: ref_by_action_def)
     apply transfer
     oops
+
+
+
 
 end
