@@ -123,6 +123,12 @@ abbreviation Miracle :: "('a, 'b) action" where "Miracle \<equiv> bot_class.bot"
 
 abbreviation Chaos :: "('a, 'b) action" where "Chaos \<equiv> top_class.top"
 
+(*Cond action and conditional simplification*)
+lemma "cond_action (guard_action b P) c (guard_action c Q) = 
+      guard_action (if (i=0) then b else c) (if (i=0) then P else Q)"
+  apply transfer
+  sorry
+
 subsection \<open> Normalisation Laws \<close>
 
 (*Lemma 1: Sequential Prefix Normalisation*)
@@ -134,7 +140,19 @@ lemma "(prefix_action e P) ;; Q = prefix_action e (P ;; Q)"
 
 (*Lemma 4: Binary Guarded External Choice Normalisation*)
 lemma "(guard_action b P) \<box> (guard_action c Q) = 
-        EXTCHOICE_action {0,1} (\<lambda> x. if x = 0 then (guard_action b P) else (guard_action c P))"
+        EXTCHOICE_action {0,1} (\<lambda> x. 
+        guard_action (if x = 0 then b else c) (if x = 0 then P else Q))"
+  apply transfer
+  sorry
+
+(*Lemma 5 : Guarded External Choice Normalisation*)
+lemma "(EXTCHOICE_action {0..n} (\<lambda> i. guard_action (b(i)) (P(i))))
+        \<box> 
+        (guard_action c Q) 
+        = 
+        EXTCHOICE_action {0..n+1} (\<lambda> i.
+        guard_action (if (i \<le> n) then b(i) else c) 
+        (if (i \<le> n) then P(i) else Q))"
   apply transfer
   sorry
 
