@@ -175,8 +175,5 @@ proof -
     apply (simp add: ref_by_action_def)
     apply transfer
     oops
-
-
-
-
+ 
 end

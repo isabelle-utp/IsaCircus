@@ -6,13 +6,9 @@ begin
 
 subsection \<open> Trace Merge \<close>
 
-fun tr_inter ::
-  "'\<theta> list \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list set" (infixr "|||\<^sub>t" 100) where
-"tr_inter [] [] = {[]}" |
-"tr_inter (e # t) [] = ({[e]} \<^sup>\<frown> (tr_inter t []))" |
-"tr_inter [] (e # t) = ({[e]} \<^sup>\<frown> (tr_inter [] t))" |
-"tr_inter (e\<^sub>1 # t\<^sub>1) (e\<^sub>2 # t\<^sub>2) =
-  ({[e\<^sub>1]} \<^sup>\<frown> (tr_inter t\<^sub>1 (e\<^sub>2 # t\<^sub>2)) \<union> {[e\<^sub>2]} \<^sup>\<frown> (tr_inter (e\<^sub>1 # t\<^sub>1) t\<^sub>2))"
+notation shuffles (infixr "|||\<^sub>t" 100)
+
+lemma "\<lbrakk> a \<in> shuffles x y; b \<in> shuffles a z \<rbrakk> \<Longrightarrow> \<exists> c. c \<in> shuffles y z \<and> b \<in> shuffles c x" 
 
 fun tr_par ::
   "'\<theta> set \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list set" where
@@ -38,12 +34,6 @@ fun tr_par ::
         else
           {[e\<^sub>1]} \<^sup>\<frown> (tr_par cs t\<^sub>1 (e\<^sub>2 # t\<^sub>2)) \<union>
           {[e\<^sub>2]} \<^sup>\<frown> (tr_par cs (e\<^sub>1 # t\<^sub>1) t\<^sub>2))"
-
-lemma tr_inter_Nil [simp]: "[] |||\<^sub>t x = {x}" "x |||\<^sub>t [] = {x}"
-  by (induct x; simp)+
-
-lemma tr_inter_eq_par: "x |||\<^sub>t y \<equiv> tr_par {} x y"
-  by (induct rule: tr_inter.induct, auto)
   
 subsection \<open> Trace Merge Lemmas \<close>
 
@@ -70,35 +60,15 @@ apply (clarsimp)
 apply (blast)
 done
 
-lemma tr_inter_sym: "x |||\<^sub>t y = y |||\<^sub>t x"
-  by (simp add: tr_inter_eq_par tr_par_sym)
+lemma tr_par_Nil [simp]: 
+  "tr_par {} [] xs = {xs}" "tr_par {} xs [] = {xs}"
+  by (induct xs, auto)+
 
-lemma Nil_in_inter: "[] \<in> tr_inter x y \<Longrightarrow> x = [] \<or> y = []"
-  by (induct x; induct y; auto)
+lemma shuffles_eq_tr_par: "x |||\<^sub>t y \<equiv> tr_par {} x y"
+  by (induct rule: shuffles.induct, simp_all add:tr_par_sym)
 
-lemma Nil_in_interE: 
-  assumes "[] \<in> tr_inter x y" "x = [] \<Longrightarrow> P" "y = [] \<Longrightarrow> P"
-  shows "P"
-  using Nil_in_inter assms(1,2,3) by blast
-
-lemma "x \<in> t1 |||\<^sub>t t2 \<Longrightarrow> y \<in> t3 |||\<^sub>t x \<Longrightarrow> \<exists>z\<in>t2 |||\<^sub>t t3. y \<in> t1 |||\<^sub>t z"
-  apply (induct rule: tr_inter.induct)
-  apply (auto elim!: Nil_in_interE simp add: tr_inter_sym)
-  apply (erule Nil_in_interE)
-   apply (induct t1 arbitrary: t2 t3 x y)
-   apply (auto simp add: tr_par_sym)
-  subgoal for a t1 t2 t3 x y
-  apply (induct t2)
-     apply auto
-    apply (case_tac "aa = a")
-     apply auto
-       apply (induct t3)
-    apply auto
-
-lemma "\<Union> (tr_par {} t3 ` tr_par {} t1 t2) = \<Union> (tr_par {} t1 ` tr_par {} t2 t3)"
-  apply auto
-  apply (induct t1)
-  apply (auto simp add: tr_par_sym)
+lemma tr_par_eq_shuffles: "tr_par {} x y = x |||\<^sub>t y"
+  by (simp add: shuffles_eq_tr_par)
 
 no_notation
   Set.member  (\<open>'(:')\<close>) and
@@ -233,8 +203,7 @@ lemma CSPFinalMerge_CRF_closed [closure]:
   
 lemma CSPInnerMerge_empty_Interleave:
   "N\<^sub>C ns1 {} ns2 = N\<^sub>I ns1 ns2"
-  apply (pred_auto)
-  oops
+  by (pred_auto)
 
 definition CSPMerge :: "('\<alpha> \<Longrightarrow> '\<sigma>) \<Rightarrow> '\<psi> set \<Rightarrow> ('\<beta> \<Longrightarrow> '\<sigma>) \<Rightarrow> (('\<sigma>,'\<psi>) sfrd) merge" ("M\<^sub>C") where
 [pred]: "M\<^sub>C ns1 cs ns2 = M\<^sub>R(N\<^sub>C ns1 cs ns2) ;; Skip"
@@ -253,12 +222,29 @@ done
     
 lemma SymMerge_CSPInnerMerge_NS [closure]: "N\<^sub>C 0\<^sub>L cs 0\<^sub>L is SymMerge"
   by (simp add: Healthy_def swap_CSPInnerMerge)
-                             
+
+lemma 
+  assumes "a \<in> shuffles x y" "b \<in> shuffles a z"
+  shows "\<exists> c\<in>shuffles y z. b\<in>shuffles x c"
+  using assms
+proof (induct arbitrary: a z y rule: shuffles.induct)
+  case (1 ys)
+  then show ?case
+    by fastforce 
+next
+  case (2 xs)
+  then show ?case
+    by fastforce 
+next
+  case (3 x xs y ys)
+  then show ?case
+qed
     
 lemma SymMerge_CSPInnerInterleave [closure]:
   "AssocMerge (N\<^sub>I 0\<^sub>L 0\<^sub>L)"
   apply (pred_auto)
-  apply (rename_tac tr tr\<^sub>2' ref\<^sub>0 tr\<^sub>0' ref\<^sub>0' tr\<^sub>1' ref\<^sub>1' tr' ref\<^sub>2' tr\<^sub>i' ref\<^sub>3')
+   apply (rename_tac tr tr\<^sub>2' ref\<^sub>0 tr\<^sub>0' ref\<^sub>0' tr\<^sub>1' ref\<^sub>1' tr' ref\<^sub>2' tr\<^sub>i' ref\<^sub>3')
+  apply (simp_all add: tr_par_eq_shuffles)
 oops
     
 lemma CSPInterMerge_right_false [rpred]: "P \<lbrakk>cs\<rbrakk>\<^sup>I false = false"
