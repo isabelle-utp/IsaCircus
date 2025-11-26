@@ -40,7 +40,6 @@ lift_definition guard_action :: "(bool, 's) expr \<Rightarrow> ('e, 's) action \
 
 lemma "P is NCSP \<Longrightarrow> GuardCSP b P is NCSP"
   by (metis NCSP_Guard SEXP_def) 
-  
 
 instantiation action :: (type, type) lattice
 begin
@@ -119,6 +118,9 @@ instance
 
 end
 
+lemma refine_action_transfer [transfer_rule]: "rel_fun cr_action (rel_fun cr_action (=)) (\<sqsubseteq>) (\<sqsubseteq>)"
+  by (simp add: Transfer.Rel_def rel_fun_def cr_action_def less_eq_action.rep_eq ref_by_action_def)
+
 abbreviation Miracle :: "('a, 'b) action" where "Miracle \<equiv> bot_class.bot"
 
 abbreviation Chaos :: "('a, 'b) action" where "Chaos \<equiv> top_class.top"
@@ -160,20 +162,23 @@ lemma "(EXTCHOICE_action {0..n} (\<lambda> i. guard_action (b(i)) (P(i))))
 
 subsection \<open> Reduction Laws \<close>
 
+lemma extchoice_idem [simp]:
+  fixes P :: "('e, 's) action"
+  shows "P \<box> P = P"
+  by (transfer, simp add: NCSP_implies_CSP extChoice_idem)
 
+lemma extchoice_mono:
+  fixes P\<^sub>1 P\<^sub>2 :: "('e, 's) action"
+  assumes "P\<^sub>1 \<sqsubseteq> P\<^sub>2" "Q\<^sub>1 \<sqsubseteq> Q\<^sub>2"
+  shows "P\<^sub>1 \<box> Q\<^sub>1 \<sqsubseteq> P\<^sub>2 \<box> Q\<^sub>2"
+  using assms
+  by (transfer, meson extChoice_mono)
+ 
 (*Lemma 11: External Choice Reduction*)
 lemma
   fixes Q R S :: "('e, 's) action"
   assumes "S \<sqsubseteq> Q" "S \<sqsubseteq> R"
   shows "S \<sqsubseteq> Q \<box> R"
-proof -
-  have "S \<box> S = S"
-    apply transfer
-    apply (simp add: NCSP_implies_CSP extChoice_idem)
-    done
-  from assms have "S \<box> S \<sqsubseteq> Q \<box> R" 
-    apply (simp add: ref_by_action_def)
-    apply transfer
-    oops
+  by (metis assms(1,2) extchoice_idem extchoice_mono)
  
 end
