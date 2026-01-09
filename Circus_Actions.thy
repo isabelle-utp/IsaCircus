@@ -2,6 +2,52 @@ theory Circus_Actions
   imports "UTP-Stateful-Failure.utp_sf_rdes" (* "Interaction_Trees.ITrees" *)
 begin 
 
+hide_const J
+
+find_theorems "EXTCHOICE" 
+
+lemma USUPs_combine:
+  fixes P :: "'i \<Rightarrow> 'j \<Rightarrow> 'a pred"
+  shows "(\<Squnion>i\<in>I. \<Squnion>j\<in>J. P i j) = (\<Squnion>(i,j)\<in>I\<times>J. P i j)"
+  by pred_auto
+
+lemma UINFs_combine:
+  fixes P :: "'i \<Rightarrow> 'j \<Rightarrow> 'a pred"
+  shows "(\<Sqinter>i\<in>I. \<Sqinter>j\<in>J. P i j) = (\<Sqinter>(i,j)\<in>I\<times>J. P i j)"
+  by pred_auto
+
+thm rpred (* Reactive predicate algebraic laws *)
+
+lemma R5_idem [rpred]: "R5(R5 P) = R5 P"
+  by pred_auto
+
+lemma EXTCHOICE_combine: 
+  assumes "\<And> i j. P i j is NCSP" "I \<noteq> {}" "J \<noteq> {}"
+  shows "(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)"
+proof -
+  have "(\<box> i\<in>I. EXTCHOICE J (\<lambda> j. P i j)) 
+         = (\<box> i\<in>I. EXTCHOICE J (\<lambda> j. \<^bold>R\<^sub>s(pre\<^sub>R(P i j) \<turnstile> peri\<^sub>R(P i j) \<diamondop> post\<^sub>R(P i j))))"
+    by (metis (mono_tags, lifting) ExtChoice_cong NCSP_implies_CSP SRD_reactive_tri_design assms) 
+  also have "... = 
+   \<^bold>R\<^sub>s((\<Squnion>i\<in>I. \<Squnion>j\<in>J. pre\<^sub>R (P i j)) \<turnstile>
+      ((\<Squnion>i\<in>I. R5 ((\<Squnion>j\<in>J. R5 (peri\<^sub>R (P i j))) \<or> (\<Sqinter>j\<in>J. R4 (peri\<^sub>R (P i j))))) \<or>
+       (\<Sqinter>i\<in>I. R4 ((\<Squnion>j\<in>J. R5 (peri\<^sub>R (P i j))) \<or> (\<Sqinter>j\<in>J. R4 (peri\<^sub>R (P i j)))))) \<diamondop>
+      (\<Sqinter>i\<in>I. \<Sqinter>j\<in>J. post\<^sub>R (P i j)))"
+    by (simp add: ExtChoice_tri_rdes' assms closure unrest)
+  also have "... = 
+   \<^bold>R\<^sub>s ((\<Squnion>ij\<in>I \<times> J. pre\<^sub>R (P (fst ij) (snd ij))) \<turnstile>
+      ((\<Squnion>ij\<in>I \<times> J. R5 (peri\<^sub>R (P (fst ij) (snd ij)))) \<or> (\<Sqinter>ij\<in>I \<times> J. R4 (peri\<^sub>R (P (fst ij) (snd ij))))) \<diamondop>
+      (\<Sqinter>ij\<in>I \<times> J. post\<^sub>R (P (fst ij) (snd ij))))"
+    by (simp add: USUPs_combine UINFs_combine rpred assms split_beta)
+  also have "... = (\<box> ij\<in>I \<times> J. \<^bold>R\<^sub>s(pre\<^sub>R(P (fst ij) (snd ij)) \<turnstile> peri\<^sub>R(P (fst ij) (snd ij)) \<diamondop> post\<^sub>R(P (fst ij) (snd ij))))"
+    by (simp add: ExtChoice_tri_rdes' assms closure unrest)
+  also have "... = (\<box> (i, j)\<in>I \<times> J. \<^bold>R\<^sub>s(pre\<^sub>R(P i j) \<turnstile> peri\<^sub>R(P i j) \<diamondop> post\<^sub>R(P i j)))"
+    by (simp add: case_prod_beta')
+  also have "... = (\<box> (i, j)\<in>I \<times> J. P i j)"
+    by (simp add: NCSP_implies_CSP SRD_reactive_tri_design assms(1))
+  finally show ?thesis .
+qed
+
 typedef ('e, 's) action = "{P :: ('s, 'e) sfrd hrel. P is NCSP}"
   by blast
 
