@@ -5,6 +5,7 @@ begin
 hide_const J
 
 find_theorems "EXTCHOICE" 
+find_theorems "Stop"
 
 lemma USUPs_combine:
   fixes P :: "'i \<Rightarrow> 'j \<Rightarrow> 'a pred"
@@ -47,6 +48,92 @@ proof -
     by (simp add: NCSP_implies_CSP SRD_reactive_tri_design assms(1))
   finally show ?thesis .
 qed
+
+
+lemma EXTCHOICE_combine_weaker: 
+  assumes "\<And> i j. P i j is NCSP"
+  shows "(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)"
+proof (cases "I \<noteq> {} \<and> J \<noteq> {}")
+  case True
+  have 1:"I \<noteq> {}" using True by simp
+  have 2:"J \<noteq> {}" using True by simp
+  have "(\<box> i\<in>I. EXTCHOICE J (\<lambda> j. P i j)) 
+         = (\<box> i\<in>I. EXTCHOICE J (\<lambda> j. \<^bold>R\<^sub>s(pre\<^sub>R(P i j) \<turnstile> peri\<^sub>R(P i j) \<diamondop> post\<^sub>R(P i j))))"
+    by (metis (mono_tags, lifting) ExtChoice_cong NCSP_implies_CSP SRD_reactive_tri_design assms) 
+  also have "... = 
+   \<^bold>R\<^sub>s((\<Squnion>i\<in>I. \<Squnion>j\<in>J. pre\<^sub>R (P i j)) \<turnstile>
+      ((\<Squnion>i\<in>I. R5 ((\<Squnion>j\<in>J. R5 (peri\<^sub>R (P i j))) \<or> (\<Sqinter>j\<in>J. R4 (peri\<^sub>R (P i j))))) \<or>
+       (\<Sqinter>i\<in>I. R4 ((\<Squnion>j\<in>J. R5 (peri\<^sub>R (P i j))) \<or> (\<Sqinter>j\<in>J. R4 (peri\<^sub>R (P i j)))))) \<diamondop>
+      (\<Sqinter>i\<in>I. \<Sqinter>j\<in>J. post\<^sub>R (P i j)))"
+    by (simp add: ExtChoice_tri_rdes' 1 2 closure unrest)
+  also have "... = 
+   \<^bold>R\<^sub>s ((\<Squnion>ij\<in>I \<times> J. pre\<^sub>R (P (fst ij) (snd ij))) \<turnstile>
+      ((\<Squnion>ij\<in>I \<times> J. R5 (peri\<^sub>R (P (fst ij) (snd ij)))) \<or> (\<Sqinter>ij\<in>I \<times> J. R4 (peri\<^sub>R (P (fst ij) (snd ij))))) \<diamondop>
+      (\<Sqinter>ij\<in>I \<times> J. post\<^sub>R (P (fst ij) (snd ij))))"
+    by (simp add: USUPs_combine UINFs_combine rpred 1 2 split_beta)
+  also have "... = (\<box> ij\<in>I \<times> J. \<^bold>R\<^sub>s(pre\<^sub>R(P (fst ij) (snd ij)) \<turnstile> peri\<^sub>R(P (fst ij) (snd ij)) \<diamondop> post\<^sub>R(P (fst ij) (snd ij))))"
+    by (simp add: ExtChoice_tri_rdes' 1 2 closure unrest)
+  also have "... = (\<box> (i, j)\<in>I \<times> J. \<^bold>R\<^sub>s(pre\<^sub>R(P i j) \<turnstile> peri\<^sub>R(P i j) \<diamondop> post\<^sub>R(P i j)))"
+    by (simp add: case_prod_beta')
+  also have "... = (\<box> (i, j)\<in>I \<times> J. P i j)"
+    by (simp add: NCSP_implies_CSP SRD_reactive_tri_design assms(1))
+  finally show ?thesis .
+next
+  case False
+  have "I = {} \<or> J = {}" using False by simp
+
+  {assume "I = {}"
+    have 1:"(\<box> i\<in>I. EXTCHOICE J (P i)) = Stop"
+      using assms
+      by (simp add: ExtChoice_empty \<open>I = {}\<close>) 
+    have 2:"(\<box> (i, j)\<in>I \<times> J. P i j) = Stop"
+      using assms
+      by (simp add: ExtChoice_empty \<open>I = {}\<close>)
+
+    have 3: "(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)"
+      using 1 2 by argo
+  }
+
+  {assume "J = {}"
+    have test:"(\<box> i\<in>I. Stop) = Stop"
+      sorry
+
+    have 1:"(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> i\<in>I. Stop)"
+      using assms
+      by (simp add: ExtChoice_empty \<open>J = {}\<close>)
+      
+    have 2:"(\<box> (i, j)\<in>I \<times> J. P i j) = Stop"
+      using assms
+      by (simp add: ExtChoice_empty \<open>J = {}\<close>)
+
+    have 3: "(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)"
+      using 1 2 test by simp
+  }
+
+  then show ?thesis
+    using \<open>I = {} \<Longrightarrow> (\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)\<close>
+      \<open>I = {} \<or> J = {}\<close> by argo 
+qed 
+
+(*
+lemma 
+  fixes n :: nat
+  assumes "\<And> i. P i is NCSP" "Q is NCSP"
+  shows "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
+          (\<box> i\<in>{0..(n+1)}. (P(i) \<lhd> (\<guillemotleft>i\<guillemotright> \<le> \<guillemotleft>n\<guillemotright>) \<rhd> Q))"
+proof -
+  have "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
+        (\<box>i0 \<in>{0..1}. (\<box> i\<in>{0..n}. (P i)) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q)" 
+    sorry
+  also have "... =  
+    (\<box>i0 \<in>{0..1}. (\<box> i\<in>{0..n}. ((P i) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q)))"
+    sorry
+  also have "... = (\<box>(i0,i) \<in> {0..1} \<times> {0..n}. ((P i) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q))"
+    sorry
+*)
+
+
+
 
 typedef ('e, 's) action = "{P :: ('s, 'e) sfrd hrel. P is NCSP}"
   by blast
@@ -202,7 +289,7 @@ lemma "(EXTCHOICE_action {0..n} (\<lambda> i. guard_action (b(i)) (P(i))))
         guard_action (if (i \<le> n) then b(i) else c) 
         (if (i \<le> n) then P(i) else Q))"
   apply transfer
-  sorry
+  
 
 
 
