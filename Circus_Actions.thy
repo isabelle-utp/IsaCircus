@@ -49,6 +49,16 @@ proof -
   finally show ?thesis .
 qed
 
+lemma ExtChoice_const:  
+  assumes "I \<noteq> {}" "P is NCSP"
+  shows "(\<box> i\<in>I. P) = P"
+  apply (rdes_expand cls:assms(2))
+  apply (simp add: rdes_def rdes_rel_norms rdes rpred closure alpha frame usubst unrest wp assms(1) del: SEXP_apply)
+  apply (rule_tac rdes_tri_eq_intro srdes_tri_eq_intro)
+    apply simp
+   apply pred_auto
+  apply simp
+  done (* rdes_eq cls:assms(2) simps:  assms(1) *)
 
 lemma EXTCHOICE_combine_weaker: 
   assumes "\<And> i j. P i j is NCSP"
@@ -96,7 +106,8 @@ next
 
   {assume "J = {}"
     have test:"(\<box> i\<in>I. Stop) = Stop"
-      sorry
+      by (metis ExtChoice_const ExtChoice_empty NCSP_Stop)
+      
 
     have 1:"(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> i\<in>I. Stop)"
       using assms
@@ -115,7 +126,28 @@ next
       \<open>I = {} \<or> J = {}\<close> by argo 
 qed 
 
-(*
+lemma precombine:
+  fixes P :: "'i \<Rightarrow> 'a pred"
+  assumes "I \<noteq> {}"
+  shows "(\<Sqinter>i\<in>I. P i) \<sqinter> Q = (\<Sqinter>(i)\<in>I. P i \<sqinter> Q)"
+  using assms by blast
+
+lemma postcombine:
+  fixes P :: "'i \<Rightarrow> 'a pred"
+  assumes "I \<noteq> {}"
+  shows "(\<Squnion>i\<in>I. P i) \<squnion> Q = (\<Squnion>i\<in>I. P i \<squnion> Q)"
+  using assms by blast
+
+lemma 
+  assumes "I \<noteq> {}" "\<And> i. P i is NCSP" "Q is NCSP"
+  shows "(\<box> i\<in>I. (P i)) \<sqinter> Q = 
+          (\<box> i\<in>I. (P i) \<sqinter> Q)"
+proof - 
+  have "(\<box> i\<in>I. (P i)) \<sqinter> Q = 
+(\<box> i\<in>I. (R\<^sub>s(pre\<^sub>R(P i) \<turnstile> peri\<^sub>R(P i) \<diamondop> post\<^sub>R(P i)))) \<sqinter> 
+  (R\<^sub>s(pre\<^sub>R(Q) \<turnstile> peri\<^sub>R(Q) \<diamondop> post\<^sub>R(Q)))"
+    sorry
+
 lemma 
   fixes n :: nat
   assumes "\<And> i. P i is NCSP" "Q is NCSP"
@@ -123,15 +155,16 @@ lemma
           (\<box> i\<in>{0..(n+1)}. (P(i) \<lhd> (\<guillemotleft>i\<guillemotright> \<le> \<guillemotleft>n\<guillemotright>) \<rhd> Q))"
 proof -
   have "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
-        (\<box>i0 \<in>{0..1}. (\<box> i\<in>{0..n}. (P i)) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q)" 
+        (\<box>i0::nat \<in>{0..1}. (\<box> i\<in>{0..n}. (P i)) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q)" 
     sorry
   also have "... =  
-    (\<box>i0 \<in>{0..1}. (\<box> i\<in>{0..n}. ((P i) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q)))"
+    (\<box>i0::nat \<in>{0..1}. (\<box> i\<in>{0..n}. ((P i) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q)))"
     sorry
   also have "... = (\<box>(i0,i) \<in> {0..1} \<times> {0..n}. ((P i) \<lhd> (\<guillemotleft>i0\<guillemotright> = 0) \<rhd> Q))"
     sorry
-*)
-
+  show ?thesis 
+    sorry
+qed
 
 
 
