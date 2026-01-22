@@ -202,12 +202,68 @@ find_theorems useq AssumeR
 find_theorems GuardedCommR extChoice
 find_theorems expr_if Miracle
 
-lemma "(\<Squnion>i\<in>I. P(i)) \<triangleleft> b \<triangleright>\<^sub>R Q = (\<Squnion>i\<in>I. P(i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
+
+find_theorems extChoice
+
+thm extChoice_alt_def
+
+lemma extChoice_alt_def':
+  assumes "a \<noteq> b"
+  shows "P \<box> Q = (\<box>i\<in>{a,b}. P \<triangleleft> \<guillemotleft>i = a\<guillemotright> \<triangleright> Q)"
+  using assms by (simp add: extChoice_def ExtChoice_def)
+
+lemma extChoice_alt_def'':
+  assumes "a \<noteq> b" "(\<guillemotleft>i = a\<guillemotright>)\<^sub>e is RC"
+  shows "P \<box> Q = (\<box>i\<in>{a,b}. P \<triangleleft> \<guillemotleft>i = a\<guillemotright> \<triangleright>\<^sub>R Q)"
+  using assms   
+
+thm RD_elim
+
+(*lemma "(\<Squnion>i\<in>I. P(i)) \<triangleleft> b \<triangleright>\<^sub>R Q = (\<Squnion>i\<in>I. P(i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
   sorry
 lemma assumptionDistribute:
-  assumes "I \<noteq> {}" "\<And> i. P i is NCSP" "Q is NCSP"
+  assumes "I \<noteq> {}" "\<And> i. P i is NCSP"
   shows "(b \<rightarrow>\<^sub>R (\<box> i\<in>I. (P i))) = ((\<box> i\<in>I. b \<rightarrow>\<^sub>R (P i)))"
-  sorry
+proof - 
+  have "(b \<rightarrow>\<^sub>R (\<box> i\<in>I. (P i))) = (\<box> i\<in>I. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Miracle"
+    unfolding gcmd_def by simp
+
+  also have "... = (\<box> i\<in>I. \<^bold>R\<^sub>s( pre\<^sub>R(P(i)) \<turnstile> peri\<^sub>R(P(i)) \<diamondop> post\<^sub>R(P(i)))) \<triangleleft> b \<triangleright>\<^sub>R Miracle"
+    by (simp add: NCSP_implies_CSP SRD_reactive_tri_design assms(2))
+
+  also have "... = (\<^bold>R\<^sub>s((\<Squnion>i\<in>I. pre\<^sub>R (P i)) \<turnstile>
+      ((\<Squnion>i\<in>I. R5 (peri\<^sub>R (P i))) \<or>
+       (\<Sqinter>i\<in>I. R4 (peri\<^sub>R (P i)))) \<diamondop>
+      (\<Sqinter>i\<in>I. post\<^sub>R (P i)))) \<triangleleft> b \<triangleright>\<^sub>R Miracle"
+    by (simp add: ExtChoice_tri_rdes' assms(1) ok'_pre_unrest)
+
+   also have "... = (\<^bold>R\<^sub>s((\<Squnion>i\<in>I. pre\<^sub>R (P i)) \<turnstile>
+      ((\<Squnion>i\<in>I. R5 (peri\<^sub>R (P i))) \<or>
+       (\<Sqinter>i\<in>I. R4 (peri\<^sub>R (P i)))) \<diamondop>
+      (\<Sqinter>i\<in>I. post\<^sub>R (P i)))) \<triangleleft> b \<triangleright>\<^sub>R \<^bold>R\<^sub>s(true\<^sub>r \<turnstile> false \<diamondop> false)"
+     by (simp add: Miracle_tri_def)
+
+   also have "... = (\<^bold>R\<^sub>s(((\<Squnion>i\<in>I. pre\<^sub>R (P i)) \<triangleleft> b \<triangleright>\<^sub>R true\<^sub>r) \<turnstile>
+      (((\<Squnion>i\<in>I. R5 (peri\<^sub>R (P i))) \<or>
+       (\<Sqinter>i\<in>I. R4 (peri\<^sub>R (P i)))) \<triangleleft> b \<triangleright>\<^sub>R false)  \<diamondop>
+      ((\<Sqinter>i\<in>I. post\<^sub>R (P i)) \<triangleleft> b \<triangleright>\<^sub>R false)))"
+     by (simp add: cond_srea_form)
+
+   also have "... = 
+\<^bold>R\<^sub>s((\<Squnion>i\<in>I. pre\<^sub>R (b \<rightarrow>\<^sub>R P i)) \<turnstile>
+      (((\<Squnion>i\<in>I. R5 (peri\<^sub>R (b \<rightarrow>\<^sub>R P i))) \<or>
+       (\<Sqinter>i\<in>I. R4 (peri\<^sub>R (b \<rightarrow>\<^sub>R P i)))))  \<diamondop>
+      ((\<Sqinter>i\<in>I. post\<^sub>R (b \<rightarrow>\<^sub>R P i))))"
+     apply (simp add: rdes assms)
+     apply (rule_tac srdes_tri_eq_intro)
+     apply pred_auto
+     sorry
+  
+  apply (insert assms(2))
+  apply (erule RD_elim)
+  
+  apply (rdes_eq_split cls: assms(2-3) simps:assms(1))
+  sorry*)
 (*
 proof - 
   have "(b \<rightarrow>\<^sub>R (\<box> i\<in>I. (P i))) = (\<box> i\<in>I. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Miracle"
@@ -266,7 +322,72 @@ proof -
   
 
 term "ucond"
-    
+
+find_theorems "(\<box>)" "(;;)"
+
+find_theorems "?P \<sqinter> (?Q ;; ?R)"
+
+find_theorems ICSP R5
+
+lemma periR_ICSP [rdes]:
+  assumes "P is ICSP" 
+  shows "peri\<^sub>R(P) = (\<not>\<^sub>r pre\<^sub>R(P))"
+  apply (insert assms)
+  apply (erule RD_elim)
+  apply (simp add: rdes assms closure)
+  done
+
+find_theorems AssumeR
+
+thm AssumeR_rdes_def
+
+lemma ExtChoice_seq_distl:
+  assumes "I \<noteq> {}" "\<And> i. Q i is NCSP"
+  shows "AssumeR b ;; (\<box> i\<in>I. (Q i)) = (\<box> i\<in>I. (AssumeR b ;; Q i))"
+proof -
+  have "AssumeR b ;; (\<box> i\<in>I. (Q i)) = \<^bold>R\<^sub>s (true\<^sub>r \<turnstile> false\<^sub>h \<diamondop> [b]\<^sup>\<top>\<^sub>r) ;; (\<box> i\<in>I. (\<^bold>R\<^sub>s( pre\<^sub>R(Q(i)) \<turnstile> peri\<^sub>R(Q(i)) \<diamondop> post\<^sub>R(Q(i)))))"
+    by (metis (lifting) AssumeR_rdes_def ExtChoice_cong NCSP_implies_CSP
+        SRD_reactive_tri_design assms(2))
+  also have "... =  (\<box> i\<in>I. \<^bold>R\<^sub>s (true\<^sub>r \<turnstile> false\<^sub>h \<diamondop> [b]\<^sup>\<top>\<^sub>r) ;; (\<^bold>R\<^sub>s(pre\<^sub>R(Q(i)) \<turnstile> peri\<^sub>R(Q(i)) \<diamondop> post\<^sub>R(Q(i)))))"
+    apply (simp add: rdes_def closure unrest wp rpred rdes assms seq_SUP_distl seqr_or_distr)
+    apply (rule srdes_tri_eq_intro)
+      apply pred_auto
+    apply pred_simp
+    using assms(1) apply blast
+    apply pred_simp
+    done
+  finally show ?thesis
+    by (metis (no_types, lifting) AssumeR_rdes_def ExtChoice_cong
+        NCSP_implies_CSP SRD_reactive_tri_design assms(2))
+qed
+
+(*
+lemma ExtChoice_seq_distl:
+  assumes "I \<noteq> {}" "P is ICSP" "\<And> i. Q i is NCSP"
+  shows "P ;; (\<box> i\<in>I. (Q i)) = (\<box> i\<in>I. (P ;; Q i))"
+proof -
+  have "P ;; (\<box> i\<in>I. (Q i)) = \<^bold>R\<^sub>s(pre\<^sub>R(P) \<turnstile> peri\<^sub>R(P) \<diamondop> post\<^sub>R(P)) ;; (\<box> i\<in>I. (\<^bold>R\<^sub>s( pre\<^sub>R(Q(i)) \<turnstile> peri\<^sub>R(Q(i)) \<diamondop> post\<^sub>R(Q(i)))))"
+    by (metis (no_types, lifting) ExtChoice_cong ICSP_implies_NCSP
+        NCSP_implies_CSP SRD_reactive_tri_design assms(2,3))
+  also have "... = \<^bold>R\<^sub>s
+     ((pre\<^sub>R P \<and> post\<^sub>R P wp\<^sub>r (\<Squnion>x\<in>I. pre\<^sub>R (Q x))) \<turnstile>
+      (peri\<^sub>R P \<or>
+       post\<^sub>R P ;;
+       ((\<Squnion>x\<in>I. R5 (peri\<^sub>R (Q x))) \<or> (\<Sqinter>x\<in>I. R4 (peri\<^sub>R (Q x))))) \<diamondop>
+      (post\<^sub>R P ;; (\<Sqinter>x\<in>I. post\<^sub>R (Q x))))"
+    by (simp add: rdes_def closure unrest assms)
+  also from assms(1) have "... =  (\<box> i\<in>I. (\<^bold>R\<^sub>s(pre\<^sub>R(P) \<turnstile> peri\<^sub>R(P) \<diamondop> post\<^sub>R(P)) ;;  \<^bold>R\<^sub>s( pre\<^sub>R(Q(i)) \<turnstile> peri\<^sub>R(Q(i)) \<diamondop> post\<^sub>R(Q(i)))))"
+    apply (simp add: rdes_def closure unrest wp rpred rdes assms(2-3) seq_SUP_distl seqr_or_distr)
+    apply (rule srdes_tri_eq_intro)
+      apply pred_auto
+    apply pred_simp
+    defer
+apply pred_simp
+
+  also have "... = (\<box> i\<in>I. (P ;; Q i))"
+    by (metis (mono_tags, lifting) ICSP_implies_NCSP NCSP_implies_CSP
+        SRD_reactive_tri_design assms(2,3))
+*)
 
 lemma cond_distrib:
   assumes "I \<noteq> {}" "\<And> i. P i is NCSP" "Q is NCSP"
@@ -277,54 +398,51 @@ proof -
   have "(\<box> i\<in>I. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Q = (((AssumeR(b)) ;; (\<box> i\<in>I. (P i))) \<sqinter> ((AssumeR(\<not> b)) ;; Q))"
     by (simp add: NCSP_ExtChoice NCSP_implies_NSRD assms(2,3) cond_srea_AssumeR_form)
 
+
   also have "... = 
-      (((b \<rightarrow>\<^sub>R (\<box> i\<in>I. (P i)))) \<sqinter> ((AssumeR(\<not> b)) ;; Q))"
-    by (simp add: AssumeR_as_gcmd CSP4_ExtChoice CSP_ExtChoice NSRD_CSP4_intro SRD_left_unit
-        assms(2) gcmd_seq_distr)
+    (((\<box> i\<in>I. (AssumeR(b)) ;; (P i))) \<sqinter> ((AssumeR(\<not> b)) ;; Q))"
+    by (simp add: ExtChoice_seq_distl assms(1,2))
 
-  also have "... =
-    (((b \<rightarrow>\<^sub>R (\<box> i\<in>I. (P i)))) \<sqinter> ((\<not> b) \<rightarrow>\<^sub>R Q))"
-    by (simp add: AssumeR_as_gcmd NCSP_implies_NSRD assms(3) gcmd_seq_distr
-        nsrdes_theory.Unit_Left)
+also have "... = 
+    (((\<box> i\<in>I. ((AssumeR(b)) ;; (P i)) \<sqinter> ((AssumeR(\<not> b)) ;; Q))))"
+  by (smt (verit) AssumeR_as_gcmd ExtChoice_cong GuardedCommR_NCSP_closed
+      NCSP_implies_NSRD assms(1,2,3) gcmd_seq_distr intern_extern_distribute
+      nsrdes_theory.Unit_Left)
 
-  also have "... =
-    ((( (\<box> i\<in>I. (b \<rightarrow>\<^sub>R P i)))) \<sqinter> ((\<not> b) \<rightarrow>\<^sub>R Q))"
-    by (metis assms(1,2) assumptionDistribute)
+  also have "... = 
+      (\<box> i\<in>I. (P i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
+    by (simp add: NCSP_implies_NSRD assms(2,3) cond_srea_AssumeR_form)
 
-   also have "... =
-    ((( (\<box> i\<in>I. (b \<rightarrow>\<^sub>R P i) \<sqinter> ((\<not> b) \<rightarrow>\<^sub>R Q)))))"
-     apply (rule intern_extern_distribute)
-       apply (simp add: assms)
-      apply (simp add: GuardedCommR_NCSP_closed assms(2))
-     using GuardedCommR_NCSP_closed assms(3) by blast
-
-   also have "... = 
-       (\<box> i\<in>I. (P i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
-     by (metis (no_types, lifting) AssumeR_as_gcmd NCSP_implies_NSRD assms(2,3)
-         cond_srea_AssumeR_form gcmd_seq_distr nsrdes_theory.Unit_Left)
-
-   finally show ?thesis .
+  finally show ?thesis .
  qed
-    
-    
 
+lemma cond_distrib:
+  assumes "I \<noteq> {}" "\<And> i. P i is NCSP" "Q is NCSP"
+  shows "(\<box> i\<in>I. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Q = 
+          (\<box> i\<in>I. (P i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
   
- find_theorems "extChoice"
-lemma 
+
+
+
+  find_theorems "extChoice"
+
+(*Relating reactive |> to normal UTP |> *)
+
+  term "P \<triangleleft> (lift_cond_srea (e)\<^sub>e) \<triangleright> Q"
+
+  term "lift_cond_srea (e)\<^sub>e"
+
+lemma
   fixes n :: nat
   assumes "\<And> i. P i is NCSP" "Q is NCSP"
   shows "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
           (\<box> i\<in>{0..(n+1)}. (P(i) \<triangleleft> (\<guillemotleft>i\<guillemotright> \<le> \<guillemotleft>n\<guillemotright>) \<triangleright>\<^sub>R Q))"
 proof -
-  have "(\<box> i\<in>{0..n}. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Q = 
-      (\<box> i\<in>{0..n}. (P i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
-    by (simp add: assms cond_distrib)
-
   have "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
-        (\<box>i0::nat \<in>{0..1}. (\<box> i\<in>{0..n}. (P i)) \<triangleleft> \<guillemotleft>i0\<guillemotright> = 0 \<triangleright>\<^sub>R Q)"
-    sorry
+        (\<box>i0::nat \<in>{n,n+1}. (\<box> i\<in>{0..n}. (P i)) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q)"
+    apply (simp add: extChoice_alt_def')
   also have "... = 
-        (\<box>i0::nat \<in>{0..1}. (\<box> i\<in>{0..n}. (P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = 0 \<triangleright>\<^sub>R Q))"
+        (\<box>i0::nat \<in>{n,n+1}. (\<box> i\<in>{0..n}. (P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright> Q))"
     apply (simp add: cond_distrib)  
   also have "... = (\<box>(i0,i) \<in> {0..1} \<times> {0..n}. ((P i) \<triangleleft> (\<guillemotleft>i0\<guillemotright> = 0) \<triangleright>\<^sub>R Q))"
     
