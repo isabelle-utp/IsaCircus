@@ -207,15 +207,26 @@ find_theorems extChoice
 
 thm extChoice_alt_def
 
+declare [[pretty_print_exprs=false]]
+
 lemma extChoice_alt_def':
   assumes "a \<noteq> b"
   shows "P \<box> Q = (\<box>i\<in>{a,b}. P \<triangleleft> \<guillemotleft>i = a\<guillemotright> \<triangleright> Q)"
   using assms by (simp add: extChoice_def ExtChoice_def)
 
+
 lemma extChoice_alt_def'':
-  assumes "a \<noteq> b" "(\<guillemotleft>i = a\<guillemotright>)\<^sub>e is RC"
-  shows "P \<box> Q = (\<box>i\<in>{a,b}. P \<triangleleft> \<guillemotleft>i = a\<guillemotright> \<triangleright>\<^sub>R Q)"
-  using assms   
+  assumes "a \<noteq> b"
+  shows "P \<box> Q = (\<box>i\<in>{a,b}. P \<triangleleft> \<guillemotleft>i = a\<guillemotright> \<triangleright>\<^sub>R Q)" 
+  unfolding lift_cond_srea_def
+  sorry
+(*
+proof -
+  have "(\<box>i\<in>{a,b}. P \<triangleleft> \<guillemotleft>i = a\<guillemotright> \<triangleright>\<^sub>R Q) =
+         (expr_if P (\<lceil>[[[\<lambda>\<s>. i = a]\<^sub>e]\<^sub>e \<up> fst\<^sub>L]\<^sub>e\<rceil>\<^sub>S) Q)"
+    unfolding lift_cond_srea_def by simp
+  *)
+  
 
 thm RD_elim
 
@@ -389,6 +400,10 @@ apply pred_simp
         SRD_reactive_tri_design assms(2,3))
 *)
 
+term "(\<box> i\<in>I. (P i)) \<triangleleft> tr\<^sup>< = 0 \<triangleright>\<^sub>R Q"
+
+term "\<lceil>b\<rceil>\<^sub>S\<^sub><"
+
 lemma cond_distrib:
   assumes "I \<noteq> {}" "\<And> i. P i is NCSP" "Q is NCSP"
   shows "(\<box> i\<in>I. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Q = 
@@ -416,13 +431,6 @@ also have "... =
   finally show ?thesis .
  qed
 
-lemma cond_distrib:
-  assumes "I \<noteq> {}" "\<And> i. P i is NCSP" "Q is NCSP"
-  shows "(\<box> i\<in>I. (P i)) \<triangleleft> b \<triangleright>\<^sub>R Q = 
-          (\<box> i\<in>I. (P i) \<triangleleft> b \<triangleright>\<^sub>R Q)"
-  
-
-
 
   find_theorems "extChoice"
 
@@ -432,6 +440,30 @@ lemma cond_distrib:
 
   term "lift_cond_srea (e)\<^sub>e"
 
+declare [[show_types]]
+find_theorems expr_if
+
+consts n::nat
+
+definition f :: "bool \<times> nat \<Rightarrow> nat" where 
+"f x = (if fst x then snd x else n + snd x)"
+
+definition g :: "nat \<Rightarrow> bool \<times> nat" where 
+"g x = (if (x \<ge> n) then (False,x) else (True,x))"
+
+lemma "inv f = g"
+
+term "{(i::bool,x). x \<in> {0..n}}"
+
+lemma "bij_betw f {(i::bool,x). x \<in> {0..n}} {0..2n}"
+  sorry
+
+lemma 
+  assumes "P is NCSP" "Q is NCSP"
+  shows "P \<box> P = P"
+  by (simp add: NCSP_implies_CSP assms(1) extChoice_idem)
+
+(*  shows "(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)"*)
 lemma
   fixes n :: nat
   assumes "\<And> i. P i is NCSP" "Q is NCSP"
@@ -441,10 +473,31 @@ proof -
   have "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
         (\<box>i0::nat \<in>{n,n+1}. (\<box> i\<in>{0..n}. (P i)) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q)"
     apply (simp add: extChoice_alt_def')
+    sorry
   also have "... = 
-        (\<box>i0::nat \<in>{n,n+1}. (\<box> i\<in>{0..n}. (P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright> Q))"
-    apply (simp add: cond_distrib)  
-  also have "... = (\<box>(i0,i) \<in> {0..1} \<times> {0..n}. ((P i) \<triangleleft> (\<guillemotleft>i0\<guillemotright> = 0) \<triangleright>\<^sub>R Q))"
+        (\<box>i0::nat \<in>{n,n+1}. (\<box> i\<in>{0..n}. (P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q))"
+    by (simp add: assms(1,2) cond_distrib)  
+
+  also have "... = 
+        (\<box>i0::nat \<in>{n,n+1}. (EXTCHOICE {0::nat..n} (\<lambda> i::nat. ((P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q))))"
+    by force
+  also have "... = (\<box>(i0::nat,i::nat) \<in> {n,n+1} \<times> {0..n}. (P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q)"
+    sorry
+
+  also have "... = 
+    (\<box>(i0::nat,i::nat) \<in> {n,n+1} \<times> {0..n}. 
+      (P i) \<triangleleft> \<guillemotleft>i0\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q)"
+    sorry
+  also have "... = (\<box> i\<in>{0..(n+1)}. (P(i) \<triangleleft> (\<guillemotleft>i\<guillemotright> \<le> \<guillemotleft>n\<guillemotright>) \<triangleright>\<^sub>R Q))"
+  proof -
+    {have "(\<box>(i::nat) \<in> {0..n}. (P i) \<triangleleft> \<guillemotleft>n\<guillemotright> = \<guillemotleft>n\<guillemotright> \<triangleright>\<^sub>R Q) = 
+          (\<box>(i::nat) \<in> {0..n}. (P i))"
+        by (simp add: cond_st_true)
+      also have "(\<box>(i::nat) \<in> {0..n}. (P i)) = 
+                  (\<box>(i::nat) \<in> {0..n}. (P(i) \<triangleleft> (\<guillemotleft>i\<guillemotright> \<le> \<guillemotleft>n\<guillemotright>) \<triangleright>\<^sub>R Q))"
+        sorry
+          
+        }
     
   show ?thesis 
     sorry
