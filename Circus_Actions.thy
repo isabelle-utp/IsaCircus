@@ -506,24 +506,60 @@ find_theorems "peri\<^sub>R" "R5"
 find_theorems "peri\<^sub>R"
 find_theorems "pre\<^sub>R" "NCSP"
 term "npre\<^sub>R"
+find_theorems "R4"
 
-lemma peri_eq:
-  fixes S\<^sub>1 S\<^sub>2::"nat set"
-  assumes "\<And> i. P i is NCSP" "S\<^sub>1 \<noteq> {}" 
-  shows "(\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))) = 
-(\<Squnion> i\<in>S\<^sub>1. (R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))))
-"
-  sorry
+lemma r5_peri_dist1:
+  fixes S
+  assumes "\<And> i. P i is NCSP" "S \<noteq> {}"
+  shows "(\<Squnion>i\<in>S. R5 (peri\<^sub>R (P(i)))) = R5 (peri\<^sub>R((\<box> i\<in>S. P(i))))"
+
+proof - 
+  (*LHS:*)
+  have "(\<Squnion>i\<in>S. R5 (peri\<^sub>R (P(i)))) = (R5(\<Squnion>i\<in>S. (peri\<^sub>R (P(i)))))"
+    by (simp add: R5_USUP assms)
+
+  have "... = (R5(\<Squnion>i\<in>S. (pre\<^sub>R(P(i)) \<longrightarrow>\<^sub>r peri\<^sub>R (P(i)))))"
+    by (simp add: NCSP_implies_NSRD NSRD_peri_under_pre assms)
 
 
-(*R5 Case*)     
+  (*RHS:*)
+  have "R5(peri\<^sub>R((\<box> i\<in>S. P(i)))) =
+        R5((R5((\<Squnion> i\<in>S. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r (\<Squnion> i\<in>S. peri\<^sub>R (P(i)))) \<or> R4(\<Sqinter> i\<in>S. peri\<^sub>R (P(i)))))"
+    by (simp add: assms(1,2) periR_ExtChoice')
+
+  have"... =
+      (R5((\<Squnion> i\<in>S. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r ((\<Squnion> i\<in>S. peri\<^sub>R (P(i))))))"
+    by (simp add: R5_R4 R5_disj R5_idem)
+
+  have "... =
+      (R5(\<Squnion>i\<in>S. (pre\<^sub>R(P(i)) \<longrightarrow>\<^sub>r peri\<^sub>R (P(i)))))"
+  
+  
+
+find_theorems "peri\<^sub>R" "Inf"
+(*R5 Case*)
 lemma R5_dist_peri: 
   fixes S\<^sub>1 S\<^sub>2::"nat set"
-  assumes "\<And> i. P i is NCSP" "S\<^sub>1 \<noteq> {}" "S\<^sub>2 \<noteq> {}" 
+  assumes "\<And> i. P i is NCSP" "S\<^sub>1 \<noteq> {}" "S\<^sub>2 \<noteq> {}" "Q is NCSP"
   shows "((\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P i))) \<and> (\<Squnion>i\<in>S\<^sub>2. R5 (peri\<^sub>R (P i))))
       = R5 (peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i))) \<and> peri\<^sub>R((\<box> i\<in>S\<^sub>2. P(i))))"
 
 proof -
+(*Additional lemmas*)
+  have "peri\<^sub>R(Q) = (pre\<^sub>R(Q) \<longrightarrow>\<^sub>r peri\<^sub>R(Q))"
+    by (simp add: NCSP_implies_NSRD NSRD_peri_under_pre assms(4))
+
+  have "(\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P(i)))) = ( R5(\<Squnion>i\<in>S\<^sub>1. (peri\<^sub>R (P(i)))))"
+    by (simp add: R5_USUP assms(2))
+
+  have "(((\<Squnion>i\<in>S\<^sub>1. (peri\<^sub>R (P(i))))) \<sqinter> ((\<Squnion>i\<in>S\<^sub>1. (peri\<^sub>R (P(i))))))
+       = (\<Squnion>i\<in>S\<^sub>1.((( (peri\<^sub>R (P(i))))) \<sqinter> ((peri\<^sub>R (P(i))))))"
+    by auto
+
+  have "(((\<Squnion>i\<in>S\<^sub>1. (\<not>\<^sub>rpre\<^sub>R (P(i))))) \<or> ((\<Squnion>i\<in>S\<^sub>1. (peri\<^sub>R (P(i))))))
+       = (\<Squnion>i\<in>S\<^sub>1.(peri\<^sub>R(P(i))))"
+  
+    
 (*Starting from RHS: *)
   (*have "R5 (peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i))) \<and> peri\<^sub>R((\<box> i\<in>S\<^sub>2. P(i)))) = undefined"
     sorry*)
@@ -548,99 +584,6 @@ proof -
       (R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r ((\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))))"
     by (simp add: R5_idem)
 
-  have "... = 
-    R5(\<not>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<or> ((\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))))"
-    by (simp add: rea_impl_def)
-
-  have "... = 
-    (R5(\<not>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i)))) \<or> R5(((\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))))"
-    by (meson R5_disj)
-
-  have "... = 
-    ((((\<Squnion> i\<in>S\<^sub>1. R5(peri\<^sub>R (P(i))) \<or> R5(\<not>\<^sub>r (pre\<^sub>R (\<Sqinter> i\<in>S\<^sub>1. P(i))))))))"
-  proof -
-    have "\<And>p pa. ((p::('b, 'a) action) \<or> pa) = pa \<sqinter> p"
-      by (smt (z3) disj_pred_def pred_ba.sup_commute)
-    then show ?thesis
-      by (simp add: INF_sup R5_USUP assms(2) disj_pred_def preR_UINF_member)
-  qed
-
-    have "... = 
-    (\<Squnion> i\<in>S\<^sub>1. R5(peri\<^sub>R (P(i)) \<or> (\<not>\<^sub>r (pre\<^sub>R (\<Sqinter> i\<in>S\<^sub>1. P(i))))))"
-      by (simp add: R5_disj)
-
-    have "... = 
-    (\<Squnion> i\<in>S\<^sub>1. R5((R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))) \<or>
-           (\<not>\<^sub>r (pre\<^sub>R (\<Sqinter> i\<in>S\<^sub>1. P(i))))))"
-      by (metis INF_const R5_R4 R5_disj R5_idem
-          \<open>(R5 (\<not>\<^sub>r (\<Squnion>i\<in>S\<^sub>1. pre\<^sub>R (P i))) \<or> R5 (\<Squnion>i\<in>S\<^sub>1. peri\<^sub>R (P i))) = (\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P i)) \<or> R5 (\<not>\<^sub>r pre\<^sub>R (\<Sqinter> (P ` S\<^sub>1))))\<close>
-          \<open>(\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P i)) \<or> R5 (\<not>\<^sub>r pre\<^sub>R (\<Sqinter> (P ` S\<^sub>1)))) = (\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P i) \<or> \<not>\<^sub>r pre\<^sub>R (\<Sqinter> (P ` S\<^sub>1))))\<close>
-          assms(2) preR_UINF_member pred_ba.boolean_algebra.disj_zero_right pred_ba.sup_idem
-          pred_ba.sup_left_commute rea_impl_disj rea_impl_false)
-      
-    have "... = 
-      (\<Squnion> i\<in>S\<^sub>1. R5((R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))) \<or> (\<not>\<^sub>r (pre\<^sub>R (\<Sqinter> i\<in>S\<^sub>1. P(i)))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))
-           ))"
-      by (simp add: pred_ba.sup.assoc pred_ba.sup_commute)
-
-    have "... = 
-      (\<Squnion> i\<in>S\<^sub>1. R5((R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))) \<or> (\<not>\<^sub>r (pre\<^sub>R (\<Sqinter> i\<in>S\<^sub>1. P(i))))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))
-           ))"
-      by (simp add: R5_disj R5_idem pred_ba.sup.assoc rea_impl_def)
-
-    have "... =
-      (\<Squnion> i\<in>S\<^sub>1. R5((R5(\<not>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<or> (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))) \<or> (\<not>\<^sub>r (pre\<^sub>R (\<Sqinter> i\<in>S\<^sub>1. P(i))))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))
-           ))"
-      by (simp add: rea_impl_def)
-
-  
-    have "... =
-      (\<Squnion> i\<in>S\<^sub>1. R5((R5(\<not>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<or> (\<not>\<^sub>r (\<Squnion> i\<in>S\<^sub>1.(pre\<^sub>R (P(i))))) \<or> (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))) ) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))
-           ))"
-      by (smt (verit, ccfv_SIG) Sup.SUP_cong assms(2) preR_UINF_member pred_ba.sup_commute)
-
-    
-    have "... =
-      (\<Squnion> i\<in>S\<^sub>1. R5((R5(\<not>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<or> (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i))) ) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))
-           ))"
-      by force
-
-  
-    have "... =
-       (\<Squnion> i\<in>S\<^sub>1. R5((R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r  (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))
-           ))"
-      using
-        \<open>R5 ((\<Squnion>i\<in>S\<^sub>1. pre\<^sub>R (P i)) \<longrightarrow>\<^sub>r (\<Squnion>i\<in>S\<^sub>1. peri\<^sub>R (P i))) = R5 (\<not>\<^sub>r (\<Squnion>i\<in>S\<^sub>1. pre\<^sub>R (P i)) \<or> (\<Squnion>i\<in>S\<^sub>1. peri\<^sub>R (P i)))\<close>
-      by presburger
-
-    have "... = 
-
-        (\<Squnion> i\<in>S\<^sub>1. R5((R5((\<Squnion> i\<in>S\<^sub>1. pre\<^sub>R (P(i))) \<longrightarrow>\<^sub>r (\<Squnion> i\<in>S\<^sub>1. peri\<^sub>R (P(i)))) \<or> R4(\<Sqinter> i\<in>S\<^sub>1. peri\<^sub>R (P(i))))))"
-      by force
-    
-    have "... = 
-      (\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P(i))))"
-      apply (subst peri_eq)
-        apply (simp add: assms)
-      apply (simp add: assms)
-      by (metis (no_types) INF_const R5_USUP assms(1,2) peri_eq)
-    
-
-
-    have "R5(peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i)))) = (\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P(i))))"
-      sorry
-
-    have "R5 (peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i))) \<and> peri\<^sub>R((\<box> i\<in>S\<^sub>2. P(i)))) = 
-        (R5(peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i)))) \<and> R5(peri\<^sub>R((\<box> i\<in>S\<^sub>2. P(i)))))"
-      by (simp add: R5_conj)
-
-    also have "... = 
-        ((\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P(i)))) \<and> (\<Squnion>i\<in>S\<^sub>2. R5 (peri\<^sub>R (P(i)))))"
-      by (metis R5_USUP \<open>R5 (peri\<^sub>R (EXTCHOICE S\<^sub>1 P)) = (\<Squnion>i\<in>S\<^sub>1. R5 (peri\<^sub>R (P i)))\<close> assms(1,3)
-          periR_ExtChoice' peri_eq ref_lattice.SUP_eq_const)
-
-    
-
     finally show ?thesis sorry
 
   qed
@@ -654,11 +597,12 @@ proof -
     
 
   
-lemma 
+lemma templemma:
   fixes S\<^sub>1 S\<^sub>2::"nat set"
   assumes "\<And> i. P i is NCSP" "S\<^sub>1 \<noteq> {}" "S\<^sub>2 \<noteq> {}" 
   shows  "(\<box> i\<in>S\<^sub>1 \<union> S\<^sub>2 . P(i)) = (\<box> i\<in>S\<^sub>1. P(i)) \<box> (\<box> i\<in>S\<^sub>2. P(i))"
   sorry
+(*
 proof -
   (*RHS*)
   have " 
@@ -722,27 +666,39 @@ proof -
       
       (R5 (peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i))) \<and> peri\<^sub>R((\<box> i\<in>S\<^sub>2. P(i)))) \<or> R4 (peri\<^sub>R((\<box> i\<in>S\<^sub>1. P(i))) \<or> peri\<^sub>R((\<box> i\<in>S\<^sub>2. P(i)))))" 
       sorry          
-
+*)
  
+lemma 
+  assumes "\<And> i. P i is NCSP"
+  shows "(\<box> i\<in>{n}. P(i)) = P(n)"
+  by (metis ExtChoice_cong ExtChoice_const assms insert_not_empty singletonD)
+
 
 (*  shows "(\<box> i\<in>I. EXTCHOICE J (P i)) = (\<box> (i, j)\<in>I \<times> J. P i j)"*)
-declare [[pretty_print_exprs=false]]
+(*declare [[pretty_print_exprs=false]]*)
+lemma "{0..n+1} = {0..n} \<union> {n+1}"
+  by (metis Suc_eq_plus1 Un_insert_right atLeast0_atMost_Suc boolean_algebra.disj_zero_right)
 
-lemma
+
+lemma extchoice_cond_distribute:
   fixes n :: nat
   assumes "\<And> i. P i is NCSP" "Q is NCSP"
   shows "(\<box> i\<in>{0..n}. (P i)) \<box> Q = 
           (\<box> i\<in>{0..(n+1)}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q))"
 proof 
-  have "(\<box> i\<in>{n+1}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q)) = 
-      (P(n+1) \<triangleleft> (\<guillemotleft>n+1 \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q)"
-    by (metis ExtChoice_cong ExtChoice_const NCSP_cond_srea assms(1,2)
-        empty_iff insertE insert_not_empty)
-    
+    have "(\<box> i\<in>{0..(n+1)}. (P(i))) = 
+      (\<box> i\<in>{0..(n)}. (P(i))) \<box>
+      (\<box> i\<in>{n+1}. (P(i)))"
+      using assms apply (simp add: templemma)
+      by (metis Un_insert_right atLeast0_atMost_Suc atLeastatMost_empty_iff bot_nat_0.extremum
+          insert_not_empty sup_bot.right_neutral templemma)
+
   have "(\<box> i\<in>{0..(n+1)}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q)) = 
       (\<box> i\<in>{0..(n)}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q)) \<box>
       (\<box> i\<in>{n+1}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q))"
-    sorry
+    by (metis (no_types, lifting) NCSP_cond_srea Suc_eq_plus1 Un_insert_right assms(1,2)
+        atLeast0_atMost_Suc atLeastatMost_empty_iff2 empty_not_insert sup_bot.right_neutral templemma
+        zero_le)
 
   also have "... = 
       (\<box> i\<in>{0..(n)}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q)) \<box>
@@ -751,12 +707,14 @@ proof
 
   also have "... = 
       (\<box> i\<in>{0..n}. (P(i) \<triangleleft> (\<guillemotleft>i \<le> n\<guillemotright>) \<triangleright>\<^sub>R Q)) \<box>
-      (Q)"  
-    sorry
+      (Q)"
+    by (simp add: cond_st_false)  
+    
 
   also have "... = 
       (\<box> i\<in>{0..n}. P(i)) \<box> Q"  
-    sorry
+    by (metis Suc_eq_plus1 atLeastatMost_empty atLeastatMost_empty_iff2 cond_st_false
+        lessI)
 
   finally show ?thesis .
 qed
