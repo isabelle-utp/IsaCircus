@@ -1,7 +1,7 @@
 theory Circus_Actions
   imports "UTP-Stateful-Failure.utp_sf_rdes" (* "Interaction_Trees.ITrees" *)
 begin 
- 
+
 typedef ('e, 's) action = "{P :: ('s, 'e) sfrd hrel. P is NCSP}"
   by blast
 
