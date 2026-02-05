@@ -205,6 +205,7 @@ no_syntax
 
 end
 
+no_notation utp_sfrd_extchoice.extChoice (infixl "\<box>" 59)
 
 text \<open> The types of the syntax translations represent categories in the Isabelle
   parser. 
@@ -265,7 +266,6 @@ syntax
   
   "_cParam" :: "pttrn \<Rightarrow>  logic \<Rightarrow> logic" ("_ \<bullet> _" [10, 0] 10)(*TBC*) 
 
-
 translations 
   "_cinput c x  P" == "CONST cinput c (\<lambda> x. P)"
   "_coutput c e P" == "CONST coutput c (e)\<^sub>e P"
@@ -296,10 +296,12 @@ translations
 
 
 (*Cond action and conditional simplification*)
-lemma "cond_action (guard_action b P) c (guard_action c Q) = 
+(*
+lemma "cond_action (guard_action b P) c (guard_action c Q) =
       guard_action (if (i=0) then b else c) (if (i=0) then P else Q)"
   apply transfer
   sorry
+*)
 
 subsection \<open> Normalisation Laws \<close>
 
