@@ -8,8 +8,6 @@ subsection \<open> Trace Merge \<close>
 
 notation shuffles (infixr "|||\<^sub>t" 100)
 
-lemma "\<lbrakk> a \<in> shuffles x y; b \<in> shuffles a z \<rbrakk> \<Longrightarrow> \<exists> c. c \<in> shuffles y z \<and> b \<in> shuffles c x" 
-
 fun tr_par ::
   "'\<theta> set \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list \<Rightarrow> '\<theta> list set" where
 "tr_par cs [] [] = {[]}" |
@@ -223,23 +221,6 @@ done
 lemma SymMerge_CSPInnerMerge_NS [closure]: "N\<^sub>C 0\<^sub>L cs 0\<^sub>L is SymMerge"
   by (simp add: Healthy_def swap_CSPInnerMerge)
 
-lemma 
-  assumes "a \<in> shuffles x y" "b \<in> shuffles a z"
-  shows "\<exists> c\<in>shuffles y z. b\<in>shuffles x c"
-  using assms
-proof (induct arbitrary: a z y rule: shuffles.induct)
-  case (1 ys)
-  then show ?case
-    by fastforce 
-next
-  case (2 xs)
-  then show ?case
-    by fastforce 
-next
-  case (3 x xs y ys)
-  then show ?case
-qed
-    
 lemma SymMerge_CSPInnerInterleave [closure]:
   "AssocMerge (N\<^sub>I 0\<^sub>L 0\<^sub>L)"
   apply (pred_auto)
@@ -917,6 +898,7 @@ proof -
     by (simp add: wp)
   finally show ?thesis .
 qed
+*)
 
 subsection \<open> Parallel operator \<close>
 
@@ -931,7 +913,7 @@ translations
   "_inter_circus P ns1 ns2 Q" == "_par_circus P ns1 {} ns2 Q"
 
 abbreviation InterleaveCSP :: "('s, 'e) action \<Rightarrow> ('s, 'e) action \<Rightarrow> ('s, 'e) action" (infixr "|||" 75)
-where "P ||| Q \<equiv> P \<lbrakk>\<emptyset>\<parallel>\<emptyset>\<rbrakk> Q"
+where "P ||| Q \<equiv> P \<parallel>\<^bsub>M\<^sub>C 1\<^sub>L {} 1\<^sub>L\<^esub> Q"
 
 abbreviation SynchroniseCSP :: "('s, 'e) action \<Rightarrow> ('s, 'e) action \<Rightarrow> ('s, 'e) action" (infixr "||" 75)
 where "P || Q \<equiv> P \<lbrakk>UNIV\<rbrakk>\<^sub>C Q"
@@ -940,7 +922,7 @@ definition CSP5 :: "'\<phi> process \<Rightarrow> '\<phi> process" where
 [pred]: "CSP5(P) = (P ||| Skip)"
 
 definition C2 :: "('\<sigma>, '\<phi>) action \<Rightarrow> ('\<sigma>, '\<phi>) action" where
-[pred]: "C2(P) = (P \<lbrakk>\<Sigma>\<parallel>{}\<parallel>\<emptyset>\<rbrakk> Skip)"
+[pred]: "C2(P) = P \<parallel>\<^bsub>M\<^sub>C 1\<^sub>L {} 0\<^sub>L\<^esub> Skip"
 
 definition CACT :: "('s, 'e) action \<Rightarrow> ('s, 'e) action" where
 [pred]: "CACT(P) = C2(NCSP(P))"
@@ -949,11 +931,11 @@ abbreviation CPROC :: "'e process \<Rightarrow> 'e process" where
 "CPROC(P) \<equiv> CACT(P)"
 
 lemma Skip_right_form:
-  assumes "P\<^sub>1 is RC" "P\<^sub>2 is RR" "P\<^sub>3 is RR" "st\<^sup>> \<sharp> P\<^sub>2"
+  assumes "P\<^sub>1 is RC" "P\<^sub>2 is RR" "P\<^sub>3 is RR" "$st\<^sup>> \<sharp> P\<^sub>2"
   shows "\<^bold>R\<^sub>s(P\<^sub>1 \<turnstile> P\<^sub>2 \<diamondop> P\<^sub>3) ;; Skip = \<^bold>R\<^sub>s(P\<^sub>1 \<turnstile> P\<^sub>2 \<diamondop> (\<exists> ref\<^sup>> \<Zspot> P\<^sub>3))"
 proof -
-  have 1:"RR(P\<^sub>3) ;; \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = (\<exists> ref\<^sup>> \<Zspot> RR(P\<^sub>3))"
-    by (rel_auto)
+  have 1:"RR(P\<^sub>3) ;; \<Phi>(True,[\<leadsto>],\<guillemotleft>[]\<guillemotright>) = (\<exists> ref\<^sup>> \<Zspot> RR(P\<^sub>3))"
+    by (pred_auto)
   show ?thesis
     by (rdes_simp cls: assms, metis "1" Healthy_if assms(3))
 qed
@@ -961,53 +943,53 @@ qed
 lemma ParCSP_rdes_def [rdes_def]:
   fixes P\<^sub>1 :: "('s,'e) action"
   assumes "P\<^sub>1 is CRC" "Q\<^sub>1 is CRC" "P\<^sub>2 is CRR" "Q\<^sub>2 is CRR" "P\<^sub>3 is CRR" "Q\<^sub>3 is CRR" 
-          "st\<^sup>> \<sharp> P\<^sub>2" "st\<^sup>> \<sharp> Q\<^sub>2" 
+          "$st\<^sup>> \<sharp> P\<^sub>2" "$st\<^sup>> \<sharp> Q\<^sub>2" 
           "ns1 \<bowtie> ns2"
   shows "\<^bold>R\<^sub>s(P\<^sub>1 \<turnstile> P\<^sub>2 \<diamondop> P\<^sub>3) \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> \<^bold>R\<^sub>s(Q\<^sub>1 \<turnstile> Q\<^sub>2 \<diamondop> Q\<^sub>3) = 
-         \<^bold>R\<^sub>s (((Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and> (Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
-              (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
+         \<^bold>R\<^sub>s (((Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and> (Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
+              (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
              (P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> P\<^sub>3 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>3) \<diamondop>
              (P\<^sub>3 \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q\<^sub>3))"
   (is "?P \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> ?Q = ?rhs")
 proof -
   have 1: "\<And> P Q. P wr\<^sub>R(N\<^sub>C ns1 cs ns2) Q = P wr[cs]\<^sub>C Q" "\<And> P Q. P wr\<^sub>R(N\<^sub>C ns2 cs ns1) Q = P wr[cs]\<^sub>C Q"
-    by (rel_auto)+
-  have 2: "(\<exists> st\<^sup>> \<bullet> N\<^sub>C ns1 cs ns2) = (\<exists> st\<^sup>> \<bullet> N\<^sub>C 0\<^sub>L cs 0\<^sub>L)"
-    by (rel_auto)
+    by (pred_auto)+
+  have 2: "(\<exists> st\<^sup>> \<Zspot> N\<^sub>C ns1 cs ns2) = (\<exists> st\<^sup>> \<Zspot> N\<^sub>C 0\<^sub>L cs 0\<^sub>L)"
+    by (pred_auto)
   have "?P \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> ?Q = (?P \<parallel>\<^bsub>M\<^sub>R(N\<^sub>C ns1 cs ns2)\<^esub> ?Q) ;;\<^sub>h Skip"
     by (simp add: CSPMerge_def par_by_merge_seq_add)
   also 
-  have "... =  \<^bold>R\<^sub>s (((Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and>
-                    (Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
-                    (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> 
-                    (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
-                    (P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or>
-                     P\<^sub>3 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> 
-                     P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>3) \<diamondop>
-                     P\<^sub>3 \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q\<^sub>3) ;;\<^sub>h Skip"
+  have "... = \<^bold>R\<^sub>s (((Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and> 
+                   (Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
+                   (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> 
+                   (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
+                   (P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> 
+                    P\<^sub>3 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> 
+                    P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>3) \<diamondop> 
+                    (P\<^sub>3 \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q\<^sub>3)) ;; Skip"
     by (simp add: parallel_rdes_def swap_CSPInnerMerge CSPInterMerge_def closure assms 1 2)
   also 
-  have "... =  \<^bold>R\<^sub>s (((Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and>
-                    (Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
-                    (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> 
-                    (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
+  have "... =  \<^bold>R\<^sub>s (((Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and>
+                    (Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
+                    (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> 
+                    (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
                     (P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or>
                      P\<^sub>3 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> 
                      P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>3) \<diamondop>
                     (\<exists> ref\<^sup>> \<Zspot> (P\<^sub>3 \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q\<^sub>3)))"
      by (simp add: Skip_right_form  closure parallel_RR_closed assms unrest)
   also
-  have "... =  \<^bold>R\<^sub>s (((Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and>
-                    (Q\<^sub>1 \<Rightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
-                    (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> 
-                    (P\<^sub>1 \<Rightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
+  have "... =  \<^bold>R\<^sub>s (((Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>2) wr[cs]\<^sub>C P\<^sub>1 \<and>
+                    (Q\<^sub>1 \<longrightarrow>\<^sub>r Q\<^sub>3) wr[cs]\<^sub>C P\<^sub>1 \<and> 
+                    (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>2) wr[cs]\<^sub>C Q\<^sub>1 \<and> 
+                    (P\<^sub>1 \<longrightarrow>\<^sub>r P\<^sub>3) wr[cs]\<^sub>C Q\<^sub>1) \<turnstile>
                     (P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or>
                      P\<^sub>3 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>2 \<or> 
                      P\<^sub>2 \<lbrakk>cs\<rbrakk>\<^sup>I Q\<^sub>3) \<diamondop>
                     (P\<^sub>3 \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q\<^sub>3))"
   proof -
     have "(\<exists> ref\<^sup>> \<Zspot> (P\<^sub>3 \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q\<^sub>3)) = (P\<^sub>3 \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q\<^sub>3)"
-      by (rel_blast)
+      by (pred_auto, blast+)
     thus ?thesis by simp
   qed
   finally show ?thesis .
@@ -1035,13 +1017,15 @@ lemma parallel_is_NCSP [closure]:
   assumes "ns1 \<bowtie> ns2" "P is NCSP" "Q is NCSP"
   shows "(P \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> Q) is NCSP"
 proof -
-  have "(P \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> Q) = (\<^bold>R\<^sub>s(pre\<^sub>R P \<turnstile> peri\<^sub>R P \<diamondop> post\<^sub>R P) \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> \<^bold>R\<^sub>s(pre\<^sub>R Q \<turnstile> peri\<^sub>R Q \<diamondop> post\<^sub>R Q))"
+  have 1: "(P \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> Q) = (\<^bold>R\<^sub>s(pre\<^sub>R P \<turnstile> peri\<^sub>R P \<diamondop> post\<^sub>R P) \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> \<^bold>R\<^sub>s(pre\<^sub>R Q \<turnstile> peri\<^sub>R Q \<diamondop> post\<^sub>R Q))"
     by (metis NCSP_implies_NSRD NSRD_is_SRD SRD_reactive_design_alt assms wait'_cond_peri_post_cmt)
-  also have "... is NCSP"
+  have 2: "... is NCSP"
     by (simp add: ParCSP_rdes_def assms closure unrest)
-  finally show ?thesis .
+  show ?thesis
+    by (simp add: "1" "2")
 qed
 
+(*
 theorem parallel_commutative:
   assumes "ns1 \<bowtie> ns2"
   shows "(P \<lbrakk>ns1\<parallel>cs\<parallel>ns2\<rbrakk> Q) = (Q \<lbrakk>ns2\<parallel>cs\<parallel>ns1\<rbrakk> P)"
@@ -1099,7 +1083,7 @@ lemma C2_form:
 proof -
   have 1:"\<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) wr[{}]\<^sub>C pre\<^sub>R P = pre\<^sub>R P" (is "?lhs = ?rhs")
     by (simp add: csp_do_triv_wr closure assms)
-  have 2: "(pre\<^sub>R P \<Rightarrow>\<^sub>r peri\<^sub>R P) \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = 
+  have 2: "(pre\<^sub>R P \<longrightarrow>\<^sub>r peri\<^sub>R P) \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = 
            (\<^bold>\<exists> ref\<^sub>0 \<bullet> (peri\<^sub>R P)\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<^sup>>\<rbrakk> \<and> $ref\<^sup>> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright>)" (is "?lhs = ?rhs")
   proof -
     have "?lhs = peri\<^sub>R P \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>)"
@@ -1118,12 +1102,12 @@ proof -
       by (simp add: closure ex_unrest Healthy_if unrest assms)
     finally show ?thesis .
   qed
-  have 3: "(pre\<^sub>R P \<Rightarrow>\<^sub>r post\<^sub>R P) \<lbrakk>\<Sigma>|{}|\<emptyset>\<rbrakk>\<^sup>F \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = post\<^sub>R(P)" (is "?lhs = ?rhs")
+  have 3: "(pre\<^sub>R P \<longrightarrow>\<^sub>r post\<^sub>R P) \<lbrakk>\<Sigma>|{}|\<emptyset>\<rbrakk>\<^sup>F \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) = post\<^sub>R(P)" (is "?lhs = ?rhs")
     by (simp add: csp_do_triv_merge SRD_post_under_pre unrest assms closure)
   show ?thesis
   proof -
     have "C2(P) = \<^bold>R\<^sub>s (\<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) wr[{}]\<^sub>C pre\<^sub>R P \<turnstile>
-          (pre\<^sub>R P \<Rightarrow>\<^sub>r peri\<^sub>R P) \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) \<diamondop> (pre\<^sub>R P \<Rightarrow>\<^sub>r post\<^sub>R P) \<lbrakk>\<Sigma>|{}|\<emptyset>\<rbrakk>\<^sup>F \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>))"
+          (pre\<^sub>R P \<longrightarrow>\<^sub>r peri\<^sub>R P) \<lbrakk>{}\<rbrakk>\<^sup>I \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>) \<diamondop> (pre\<^sub>R P \<longrightarrow>\<^sub>r post\<^sub>R P) \<lbrakk>\<Sigma>|{}|\<emptyset>\<rbrakk>\<^sup>F \<Phi>(true,id\<^sub>s,\<guillemotleft>[]\<guillemotright>))"
       by (simp add: C2_def, rdes_simp cls: assms)
     also have "... = \<^bold>R\<^sub>s (pre\<^sub>R P \<turnstile> (\<^bold>\<exists> ref\<^sub>0 \<bullet> peri\<^sub>R P\<lbrakk>\<guillemotleft>ref\<^sub>0\<guillemotright>/$ref\<^sup>>\<rbrakk> \<and> $ref\<^sup>> \<subseteq> \<guillemotleft>ref\<^sub>0\<guillemotright>) \<diamondop> post\<^sub>R P)"
       by (simp add: 1 2 3)
@@ -1167,7 +1151,7 @@ lemma C2_implies_CDC_peri [closure]:
 proof -
   have "peri\<^sub>R(P) = peri\<^sub>R (\<^bold>R\<^sub>s (pre\<^sub>R P \<turnstile> CDC(peri\<^sub>R P) \<diamondop> post\<^sub>R P))"
     by (metis C2_CDC_form Healthy_if assms(1) assms(2))
-  also have "... = CDC (pre\<^sub>R P \<Rightarrow>\<^sub>r peri\<^sub>R P)"
+  also have "... = CDC (pre\<^sub>R P \<longrightarrow>\<^sub>r peri\<^sub>R P)"
     by (simp add: rdes rpred assms closure unrest del: NSRD_peri_under_pre)
   also have "... = CDC (peri\<^sub>R P)"
     by (simp add: SRD_peri_under_pre closure unrest assms)
