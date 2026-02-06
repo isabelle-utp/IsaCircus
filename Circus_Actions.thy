@@ -4,6 +4,7 @@ theory Circus_Actions
   imports 
     "UTP-Stateful-Failure.utp_sf_rdes"
     Circus_Hiding
+    Circus_Renaming
     Circus_Parallel
     "Circus_Toolkit.Channels_Events"
     "Circus_Toolkit.Action_Command"
@@ -49,7 +50,7 @@ lift_definition cextchoice :: "('e, 's) action \<Rightarrow> ('e, 's) action \<R
 lift_definition cExtChoice :: "'a set \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is "EXTCHOICE"
   by (simp add: closure)
 
-definition crenaming :: "('e \<leftrightarrow> 'f) \<Rightarrow> ('e, 's) action \<Rightarrow> ('f, 's) action" where "crenaming = undefined"
+lift_definition crenaming :: "('e, 's) action \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('f, 's) action" is RenameCSP by (simp add: closure)
 
 lift_definition chide :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action" is "HideCSP" by (simp add:closure)
 
@@ -283,7 +284,7 @@ translations
   "_cguard b P" == "CONST cguard (b)\<^sub>e P"
   "_cdot c e P" == "CONST coutput c (e)\<^sub>e P"
   "_csync c P" == "CONST csync c P"
-  "_crenaming P rn" == "CONST crenaming (_rnenum rn) P" 
+  "_crenaming P rn" == "CONST crenaming P (_rnenum rn)" 
   "_chide P es" == "CONST chide P (_ch_enum es)"
   "_cparallel P A Q" == "CONST cparallel P A Q " 
   "_cEChoice i A P" == "CONST cExtChoice A (\<lambda> i. P)"
