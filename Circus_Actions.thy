@@ -74,14 +74,14 @@ lift_definition cinput :: "('a, 'e) chan \<Rightarrow> ('a \<Rightarrow> ('e, 's
 lift_definition coutput :: "('a, 'e) chan \<Rightarrow> ('a, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
   is OutputCSP by (simp add: closure)
 
-definition coutinp :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr  \<Rightarrow> ('b \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where 
-"coutinp c e A = undefined"
+lift_definition coutinp :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr  \<Rightarrow> ('b \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
+is "\<lambda> c e P. InputCSP c (\<lambda> (x, y) s. x = e s) (\<lambda> (x, y). P y)" by (simp add:closure prod.case_eq_if)
 
-definition cdotinp :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr  \<Rightarrow> ('b \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where 
-"cdotinp c e A = undefined"
+lift_definition cdotinp :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr  \<Rightarrow> ('b \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
+is "\<lambda> c e P. InputCSP c (\<lambda> (x, y) s. x = e s) (\<lambda> (x, y). P y)" by (simp add:closure prod.case_eq_if)
 
-definition cdotdot :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr \<Rightarrow> ('b, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" where 
-"cdotdot c e1 e2 A = undefined"
+lift_definition cdotdot :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr \<Rightarrow> ('b, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
+is "\<lambda> c e1 e2 P. OutputCSP c (\<lambda> s. (e1 s, e2 s)) P" by (simp add: closure)
 
 definition cdotdotinp :: "('a \<times> 'b \<times> 'c, 'e) chan \<Rightarrow>('a, 's) expr \<Rightarrow> ('b, 's) expr  \<Rightarrow> ('c \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where 
 "cdotdotinp c e1 e2 A = undefined"
