@@ -6,7 +6,7 @@ subsection \<open> Renaming Reactive Relations \<close>
 
 subsection \<open> Renaming \<close>
 
-definition csp_rename :: "('s, 'e) action \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('s, 'f) action" ("(_)\<lparr>_\<rparr>\<^sub>c" [999, 0] 999) where
+definition csp_rename :: "('s, 'e) sfrd hrel \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('s, 'f) sfrd hrel" ("(_)\<lparr>_\<rparr>\<^sub>c" [999, 0] 999) where
 [pred]: "P\<lparr>R\<rparr>\<^sub>c = R2(($tr\<^sup>> = [] \<and> $st\<^sup>> = $st\<^sup><)\<^sub>e 
                    ;; P 
                    ;; (list_all2 (\<lambda> x y. (x, y) \<in> \<guillemotleft>R\<guillemotright>) ($tr\<^sup><) ($tr\<^sup>>) \<and> $st\<^sup>> = $st\<^sup>< \<and> \<guillemotleft>R\<guillemotright>\<^sup>\<sim>\<lparr>$ref\<^sup>>\<rparr>  \<subseteq> ($ref\<^sup><))\<^sub>e)"
@@ -87,7 +87,7 @@ lemma csp_rename_CDC_closed [closure]:
 
 subsection \<open> Renaming \<close>
 
-definition RenameCSP :: "('s, 'e) action \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('s, 'f) action" ("(_)\<lparr>_\<rparr>\<^sub>C" [999, 0] 999) where
+definition RenameCSP :: "('s, 'e) sfrd hrel \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('s, 'f) sfrd hrel" ("(_)\<lparr>_\<rparr>\<^sub>C" [999, 0] 999) where
 [pred]: "RenameCSP P R = \<^bold>R\<^sub>s((\<not>\<^sub>r (\<not>\<^sub>r pre\<^sub>R(P))\<lparr>R\<rparr>\<^sub>c ;; true\<^sub>r) \<turnstile> ((peri\<^sub>R(P))\<lparr>R\<rparr>\<^sub>c) \<diamondop> ((post\<^sub>R(P))\<lparr>R\<rparr>\<^sub>c))"
 
 lemma RenameCSP_rdes_def [rdes_def]: 

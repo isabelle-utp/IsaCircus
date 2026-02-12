@@ -287,7 +287,7 @@ qed
 text \<open> Important theorem that shows the form of a parallel process \<close>
 
 lemma CSPInnerMerge_form:
-  fixes P Q :: "('\<sigma>,'\<phi>) action"
+  fixes P Q :: "('\<sigma>,'\<phi>) sfrd hrel"
   assumes "vwb_lens ns1" "vwb_lens ns2" "P is RR" "Q is RR" 
   shows
   "P \<parallel>\<^bsub>N\<^sub>C ns1 cs ns2\<^esub> Q = 
@@ -341,7 +341,7 @@ lemma seqr_exists_right:
   by (pred_auto)
 
 lemma CSPInterMerge_form:
-  fixes P Q :: "('\<sigma>,'\<phi>) action"
+  fixes P Q :: "('\<sigma>,'\<phi>) sfrd hrel"
   assumes "P is RR" "Q is RR" 
   shows
   "P \<lbrakk>cs\<rbrakk>\<^sup>I Q = 
@@ -371,7 +371,7 @@ proof -
 qed
   
 lemma CSPFinalMerge_form:
-  fixes P Q :: "('\<sigma>,'\<phi>) action"
+  fixes P Q :: "('\<sigma>,'\<phi>) sfrd hrel"
   assumes "vwb_lens ns1" "vwb_lens ns2" "P is RR" "Q is RR" "$ref\<^sup>> \<sharp> P" "$ref\<^sup>> \<sharp> Q"
   shows
   "(P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sup>F Q) = 
@@ -912,22 +912,22 @@ translations
   "_par_csp P cs Q" == "_par_circus P 0\<^sub>L cs 0\<^sub>L Q"
   "_inter_circus P ns1 ns2 Q" == "_par_circus P ns1 {} ns2 Q"
 
-abbreviation InterleaveCSP :: "('s, 'e) action \<Rightarrow> ('s, 'e) action \<Rightarrow> ('s, 'e) action" (infixr "|||" 75)
+abbreviation InterleaveCSP :: "('s, 'e) sfrd hrel \<Rightarrow> ('s, 'e) sfrd hrel \<Rightarrow> ('s, 'e) sfrd hrel" (infixr "|||" 75)
 where "P ||| Q \<equiv> P \<parallel>\<^bsub>M\<^sub>C 1\<^sub>L {} 1\<^sub>L\<^esub> Q"
 
-abbreviation SynchroniseCSP :: "('s, 'e) action \<Rightarrow> ('s, 'e) action \<Rightarrow> ('s, 'e) action" (infixr "||" 75)
+abbreviation SynchroniseCSP :: "('s, 'e) sfrd hrel \<Rightarrow> ('s, 'e) sfrd hrel \<Rightarrow> ('s, 'e) sfrd hrel" (infixr "||" 75)
 where "P || Q \<equiv> P \<lbrakk>UNIV\<rbrakk>\<^sub>C Q"
 
-definition CSP5 :: "'\<phi> process \<Rightarrow> '\<phi> process" where
+definition CSP5 :: "(unit, '\<phi>) sfrd hrel \<Rightarrow> (unit, '\<phi>) sfrd hrel" where
 [pred]: "CSP5(P) = (P ||| Skip)"
 
-definition C2 :: "('\<sigma>, '\<phi>) action \<Rightarrow> ('\<sigma>, '\<phi>) action" where
+definition C2 :: "('\<sigma>, '\<phi>) sfrd hrel \<Rightarrow> ('\<sigma>, '\<phi>) sfrd hrel" where
 [pred]: "C2(P) = P \<parallel>\<^bsub>M\<^sub>C 1\<^sub>L {} 0\<^sub>L\<^esub> Skip"
 
-definition CACT :: "('s, 'e) action \<Rightarrow> ('s, 'e) action" where
+definition CACT :: "('s, 'e) sfrd hrel \<Rightarrow> ('s, 'e) sfrd hrel" where
 [pred]: "CACT(P) = C2(NCSP(P))"
 
-abbreviation CPROC :: "'e process \<Rightarrow> 'e process" where
+abbreviation CPROC :: "(unit, 'e) sfrd hrel \<Rightarrow> (unit, 'e) sfrd hrel" where
 "CPROC(P) \<equiv> CACT(P)"
 
 lemma Skip_right_form:
@@ -941,7 +941,7 @@ proof -
 qed
 
 lemma ParCSP_rdes_def [rdes_def]:
-  fixes P\<^sub>1 :: "('s,'e) action"
+  fixes P\<^sub>1 :: "('s,'e) sfrd hrel"
   assumes "P\<^sub>1 is CRC" "Q\<^sub>1 is CRC" "P\<^sub>2 is CRR" "Q\<^sub>2 is CRR" "P\<^sub>3 is CRR" "Q\<^sub>3 is CRR" 
           "$st\<^sup>> \<sharp> P\<^sub>2" "$st\<^sup>> \<sharp> Q\<^sub>2" 
           "ns1 \<bowtie> ns2"
@@ -1553,7 +1553,7 @@ lemma parallel_assigns:
 
 (* Trying to find a form of reactive design which when interleaved with Chaos yields Chaos *)
 
-definition Accept :: "('s, 'e) action" where
+definition Accept :: "('s, 'e) sfrd hrel" where
 [upred_defs, rdes_def]: "Accept = \<^bold>R\<^sub>s(true\<^sub>r \<turnstile> \<E>(true,\<guillemotleft>[]\<guillemotright>,\<guillemotleft>UNIV\<guillemotright>) \<diamondop> false)"
 
 definition [upred_defs, rdes_def]: "CACC(P) = (P \<or> Accept)"

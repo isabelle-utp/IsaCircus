@@ -88,7 +88,7 @@ lemma ref'_unrest_hide_rea [unrest]: "$ref\<^sup>> \<sharp> P \<Longrightarrow> 
 
 subsection \<open> Hiding in preconditions \<close>
 
-definition abs_rea :: "('s, 'e) action \<Rightarrow> 'e set \<Rightarrow> ('s, 'e) action" ("abs\<^sub>r") where
+definition abs_rea :: "('s, 'e) sfrd hrel \<Rightarrow> 'e set \<Rightarrow> ('s, 'e) sfrd hrel" ("abs\<^sub>r") where
 [pred]: "abs\<^sub>r P E = (\<not>\<^sub>r (hide\<^sub>r (\<not>\<^sub>r P) E ;; true\<^sub>r))"
 
 lemma abs_rea_false [rpred]: "abs\<^sub>r false E = false"
@@ -160,7 +160,7 @@ text \<open> In common with the UTP book definition of hiding, this definition d
   divergence if there is an infinite sequence of events that are hidden. For this, we would
   need a more complex precondition which is left for future work. \<close>
 
-definition HideCSP :: "('s, 'e) action \<Rightarrow> 'e set \<Rightarrow> ('s, 'e) action" (infixl "\\\<^sub>C" 80) where 
+definition HideCSP :: "('s, 'e) sfrd hrel \<Rightarrow> 'e set \<Rightarrow> ('s, 'e) sfrd hrel" (infixl "\\\<^sub>C" 80) where 
   [pred]: 
   "HideCSP P E = \<^bold>R\<^sub>s(abs\<^sub>r(pre\<^sub>R(P)) E \<turnstile> hide\<^sub>r (peri\<^sub>R(P)) E \<diamondop> hide\<^sub>r (post\<^sub>R(P)) E)"
 
