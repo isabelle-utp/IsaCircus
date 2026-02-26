@@ -33,6 +33,8 @@ lift_definition Stop :: "('e, 's) action" is "utp_sfrd_healths.Stop" by (simp ad
 
 lift_definition cassigns :: "'s subst \<Rightarrow> ('e, 's) action" is AssignsCSP by (simp add: closure)
 
+adhoc_overloading uassigns == cassigns
+
 lift_definition cseq :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "(;;)" 
   by (simp add: closure) 
 
