@@ -43,6 +43,8 @@ adhoc_overloading useq == cseq
 definition cseqIte :: "'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where
 "cseqIte A P = Finite_Set.fold (\<lambda> i. cseq (P i)) Skip A"
 
+lift_definition cspec :: "('a \<Longrightarrow> 's) \<Rightarrow> 's pred \<Rightarrow> 's pred \<Rightarrow> ('e, 's) action" is SpecC by (simp add: closure)
+
 lift_definition cond_action :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
   is "\<lambda> P b Q. P \<triangleleft> b \<triangleright>\<^sub>R Q" by (simp add: closure)
 
@@ -223,6 +225,8 @@ syntax
   "_cinterrupt" :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<triangle> _" [50, 51] 50)
   (*Can interrupt be defined using definition, just like cechoice??*)\<close>
 
+  "_cspec" :: "svid \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_:[_,_]" [100,0,0] 100)
+
   "_cinput" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>?_ \<rightarrow> _" [61, 0, 62] 62)
 
   "_coutput" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>!_ \<rightarrow> _" [61, 0, 62] 62)
@@ -270,6 +274,8 @@ syntax
   "_cParam" :: "pttrn \<Rightarrow>  logic \<Rightarrow> logic" ("_ \<bullet> _" [10, 0] 10)(*TBC*) 
 
 translations 
+  "_cspec v P Q" == "CONST cspec v (P)\<^sub>e (Q)\<^sub>e"
+
   "_cinput c x  P" == "CONST cinput c (\<lambda> x. P)"
   "_coutput c e P" == "CONST coutput c (e)\<^sub>e P"
   "_coutinp c e x P" == "CONST coutinp c (e)\<^sub>e (\<lambda> x. P)"
