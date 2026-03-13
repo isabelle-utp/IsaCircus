@@ -58,6 +58,12 @@ lift_definition crenaming :: "('e, 's) action \<Rightarrow> ('e \<leftrightarrow
 
 lift_definition chide :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action" is "HideCSP" by (simp add:closure)
 
+lift_definition cactpar :: "('e, 's) action \<Rightarrow> ('a \<Longrightarrow> 's) \<Rightarrow> 'e set \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
+is "\<lambda> P ns1 cs ns2 Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<^sub>C ns1 cs ns2\<^esub> Q else Miracle" by (simp add: closure)
+
+lift_definition cactinter :: "('e, 's) action \<Rightarrow> ('a \<Longrightarrow> 's) \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
+is "\<lambda> P ns1 ns2 Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<^sub>C ns1 {} ns2\<^esub> Q else Miracle" by (simp add: closure)
+
 lift_definition cparallel :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
 is "\<lambda> P cs Q. P \<lbrakk>cs\<rbrakk>\<^sub>C Q" by (simp add: closure)
 
@@ -225,7 +231,7 @@ syntax
   "_cinterrupt" :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<triangle> _" [50, 51] 50)
   (*Can interrupt be defined using definition, just like cechoice??*)\<close>
 
-  "_cspec" :: "svid \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_:[_,_]" [100,0,0] 100)
+  "_cspec" :: "svids \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_:[_,_]" [100,0,0] 100)
 
   "_cinput" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>?_ \<rightarrow> _" [61, 0, 62] 62)
 
@@ -260,6 +266,8 @@ syntax
   "_chide" :: "logic \<Rightarrow> chans \<Rightarrow> logic" ("_ \<Zhide> \<lbrace>_\<rbrace>" [60, 61] 60)
 
   "_cparallel" :: "logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk> | _ | \<rbrakk> _" [60, 0,  61] 60)
+  "_par_circus"   :: "logic \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> logic"  ("_ \<lbrakk>_\<parallel>_\<parallel>_\<rbrakk> _" [75,0,0,0,76] 76)
+  "_inter_circus" :: "logic \<Rightarrow> svids \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> logic"  ("_ \<lbrakk>_\<parallel>_\<rbrakk> _" [75,0,0,76] 76)
  
   "_cEChoice" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<box> _ \<in> _ \<bullet> _")
 
@@ -294,7 +302,9 @@ translations
   "_csync c P" == "CONST csync c P"
   "_crenaming P rn" == "CONST crenaming P (_rnenum rn)" 
   "_chide P es" == "CONST chide P (_ch_enum es)"
-  "_cparallel P A Q" == "CONST cparallel P A Q " 
+  "_cparallel P A Q" == "CONST cparallel P A Q "
+  "_par_circus P ns1 cs ns2 Q" == "P \<parallel>\<^bsub>M\<^sub>C ns1 cs ns2\<^esub> Q"
+  "_inter_circus P ns1 ns2 Q" == "_par_circus P ns1 {} ns2 Q"
   "_cEChoice i A P" == "CONST cExtChoice A (\<lambda> i. P)"
   "_cInterleave i A P" == "CONST cInterleave A (\<lambda> i. P)"
 
