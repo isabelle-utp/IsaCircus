@@ -45,6 +45,8 @@ definition cseqIte :: "'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) action) \
 
 lift_definition cspec :: "('a \<Longrightarrow> 's) \<Rightarrow> 's pred \<Rightarrow> 's pred \<Rightarrow> ('e, 's) action" is SpecC by (simp add: closure)
 
+lift_definition cassume :: "('s \<Rightarrow> \<bool>) \<Rightarrow> ('e, 's) action" is AssumeCircus by (simp add: closure)
+
 lift_definition cond_action :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
   is "\<lambda> P b Q. P \<triangleleft> b \<triangleright>\<^sub>R Q" by (simp add: closure)
 
@@ -233,6 +235,8 @@ syntax
 
   "_cspec" :: "svids \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_:[_,_]" [100,0,0] 100)
 
+  "_cassume" :: "logic \<Rightarrow> logic" ("{_}\<^sub>C")
+
   "_cinput" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>?_ \<rightarrow> _" [61, 0, 62] 62)
 
   "_coutput" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>!_ \<rightarrow> _" [61, 0, 62] 62)
@@ -283,6 +287,7 @@ syntax
 
 translations 
   "_cspec v P Q" == "CONST cspec v (P)\<^sub>e (Q)\<^sub>e"
+  "_cassume e" == "CONST cassume (e)\<^sub>e" 
 
   "_cinput c x  P" == "CONST cinput c (\<lambda> x. P)"
   "_coutput c e P" == "CONST coutput c (e)\<^sub>e P"
