@@ -50,6 +50,8 @@ lift_definition cassume :: "('s \<Rightarrow> \<bool>) \<Rightarrow> ('e, 's) ac
 lift_definition cond_action :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
   is "\<lambda> P b Q. P \<triangleleft> b \<triangleright>\<^sub>R Q" by (simp add: closure)
 
+adhoc_overloading ucond == cond_action
+
 lift_definition cextchoice :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" (infixl "\<box>" 59) is "\<lambda> P Q. P \<box> Q"
   by (simp add: closure)
 
