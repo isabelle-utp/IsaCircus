@@ -310,8 +310,8 @@ translations
   "_crenaming P rn" == "CONST crenaming P (_rnenum rn)" 
   "_chide P es" == "CONST chide P (_ch_enum es)"
   "_cparallel P A Q" == "CONST cparallel P A Q "
-  "_par_circus P ns1 cs ns2 Q" == "P \<parallel>\<^bsub>M\<^sub>C ns1 cs ns2\<^esub> Q"
-  "_inter_circus P ns1 ns2 Q" == "_par_circus P ns1 {} ns2 Q"
+  "_par_circus P ns1 cs ns2 Q" == "CONST cactpar P ns1 cs ns2 Q"
+  "_inter_circus P ns1 ns2 Q" == "CONST cactinter P ns1 ns2 Q"
   "_cEChoice i A P" == "CONST cExtChoice A (\<lambda> i. P)"
   "_cInterleave i A P" == "CONST cInterleave A (\<lambda> i. P)"
 
