@@ -914,7 +914,7 @@ subsection \<open> Parallel operator \<close>
 
 syntax
   "_par_csp"      :: "logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk>_\<rbrakk>\<^sub>C _" [75,0,76] 76)
-  "_par_ns_csp"   :: "logic \<Rightarrow> svid \<Rightarrow> logic \<Rightarrow> svid \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk>_|_|_\<rbrakk> _" [75,0,0,0,76] 76)
+  "_par_ns_csp"   :: "logic \<Rightarrow> svid \<Rightarrow> logic \<Rightarrow> svid \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk>_|_|_\<rbrakk>\<^sub>C _" [75,0,0,0,76] 76)
 
 
 translations
@@ -1037,11 +1037,11 @@ qed
 
 theorem parallel_commutative:
   assumes "ns1 \<bowtie> ns2"
-  shows "(P \<lbrakk>ns1|cs|ns2\<rbrakk> Q) = (Q \<lbrakk>ns2|cs|ns1\<rbrakk> P)"
+  shows "(P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sub>C Q) = (Q \<lbrakk>ns2|cs|ns1\<rbrakk>\<^sub>C P)"
 proof -
-  have "(P \<lbrakk>ns1|cs|ns2\<rbrakk> Q) = P \<parallel>\<^bsub>swap\<^sub>m ;; (M\<^sub>C ns2 cs ns1)\<^esub> Q"
+  have "(P \<lbrakk>ns1|cs|ns2\<rbrakk>\<^sub>C Q) = P \<parallel>\<^bsub>swap\<^sub>m ;; (M\<^sub>C ns2 cs ns1)\<^esub> Q"
     by (simp add: CSPMerge_def seqr_assoc[THEN sym] swap_merge_rd swap_CSPInnerMerge lens_indep_sym assms)
-  also have "... = Q \<lbrakk>ns2|cs|ns1\<rbrakk> P"
+  also have "... = Q \<lbrakk>ns2|cs|ns1\<rbrakk>\<^sub>C P"
     by (simp add: par_by_merge_def par_sep_swap rel_RA1)
   finally show ?thesis .
 qed
