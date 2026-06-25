@@ -10,7 +10,6 @@ theory Circus_Actions
     "Circus_Toolkit.Action_Command"
 begin 
 
-
 unbundle no lattice_syntax
 unbundle UTP_Syntax
 
@@ -364,6 +363,13 @@ lemma extchoice_idem [simp]:
   fixes P :: "('e, 's) action"
   shows "P \<box> P = P"
   by (transfer, simp add: NCSP_implies_CSP extChoice_idem)
+
+lemma refine_coinduct:
+  fixes X :: "'a pred"
+  assumes mono: "mono F"
+    and ind: "F (X \<sqinter> \<mu> F) \<sqsubseteq> X"
+  shows "\<mu> F \<sqsubseteq> X"
+  by (meson coinduct ind local.mono pred_ref_iff_le)
 
 lemma extchoice_mono:
   fixes P\<^sub>1 P\<^sub>2 :: "('e, 's) action"
