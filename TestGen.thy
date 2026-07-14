@@ -382,111 +382,56 @@ definition RoboWorld :: "('ch, 'st) action" where
 end
 
 
+section \<open>Test Generation Algorithm\<close>
+
 dataspace rescueDrone = rescueDroneRoboChart + rescueDroneRoboWorld +
 
 context rescueDrone
 begin
 
-term "rescueDrone"
-typ "'a \<Longrightarrow>\<^sub>\<triangle> 'b"
-ML_val \<open>[
+method rct_refine = fail
+method rct_refine_by_trace = fail
+method rct_simp_counterexample = clarsimp
+
+ML \<open>fun obtainCounterexample ctxt goal = (SOME [
     @{term "prism_build takeoff Out"},
     @{term "prism_build tock ()"},
     @{term "prism_build tock ()"}
-  ]\<close>
+  ], ctxt)\<close>
 
-ML \<open>fun checkRefinement (spec : term) (impl : term) =
-      case Term.head_of impl of
-        (* Output0 - Expected counterexample: takeoff\<^bold>.Out, tock, tock *)
-        Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output0",_) =>
-          SOME [
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build tock ()"}
-          ]
-        (* Output1 - Refines original *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output1",_) => NONE
-        (* Output2 - Expected counterexample: takeoff\<^bold>.Out, tock, takeoff\<^bold>.Out *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output2",_) =>
-          SOME [
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build takeoff Out"}
-          ]
-        (* Output3 - Expected counterexample: takeoff\<^bold>.Out, tock, moveCall\<^bold>.LV, found\<^bold>.In, land\<^bold>.Out,
-            tock, tock, takeoff\<^bold>.Out, tock, turnBackCall, tock, moveCall\<^bold>.LV, tock, tock, takeoff\<^bold>.Out *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output3",_) =>
-          SOME [
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build moveCall LV"},
-            @{term "prism_build found In"},
-            @{term "prism_build land Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build turnBackCall ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build moveCall LV"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build takeoff Out"}
-          ]
-        (* Output4 - Refines original *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output4",_) => NONE
-        (* Output5 - Expected counterexample: takeoff\<^bold>.Out, tock, origin\<^bold>.In *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output5",_) =>
-          SOME [
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build origin In"}
-          ]
-        (* Output6 - Expected counterexample: takeoff\<^bold>.Out, tock, tock, tock, takeoff\<^bold>.Out *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output6",_) =>
-          SOME [
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build takeoff Out"}
-          ]
-        (* Output7 - Refines original *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output7",_) => NONE
-        (* Output8 - Expected counterexample: origin\<^bold>.In *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output8",_) =>
-          SOME [
-            @{term "prism_build origin In"}
-          ]
-        (* Output9 - Expected counterexample: takeoff\<^bold>.Out, tock, moveCall\<^bold>.LV, found\<^bold>.In, land\<^bold>.Out,
-            tock, tock, takeoff\<^bold>.Out, tock, turnBackCall, tock, moveCall\<^bold>.LV, origin\<^bold>.In, turnBackCall,
-            tock, land\<^bold>.Out, moveCall\<^bold>.LV *)
-      | Const ("TestGen.rescueDroneRoboChart.RescueDrone_mTransTarget_Output9",_) =>
-          SOME [
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build moveCall LV"},
-            @{term "prism_build found In"},
-            @{term "prism_build land Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build takeoff Out"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build turnBackCall ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build moveCall LV"},
-            @{term "prism_build Origin In"},
-            @{term "prism_build turnBackCall ()"},
-            @{term "prism_build tock ()"},
-            @{term "prism_build land Out"},
-            @{term "prism_build moveCall LV"}
-          ]
-      | _ => SOME []\<close>
-ML \<open>Option.map\<close>
-ML \<open>fun checkTraceOf (impl : term) (trace : term list)  =
-          let fun event_of (Const ("Prisms.prism.prism_build", _) $ Free (name, _) $ _) = name
-              fun check_trace (x :: xs) =
-                  if x = @{term "moveCall"} then if hd xs = @{term "found"} then SOME [x, hd xs] else NONE else NONE
-          in check_trace trace end\<close>
+ML \<open>fun checkRefinement ctxt (spec : term) (impl : term) =
+      let val spec_type = Term.fastype_of spec
+          val ref_by = Logic.varify_global @{term ref_by}
+          val ref_by_type = Term.fastype_of ref_by
+          val insts = Sign.typ_match @{theory} (#1 (Term.dest_funT ref_by_type), spec_type) Vartab.empty
+          val ref_by_inst = Envir.subst_term_types insts ref_by
+          val statement = Thm.cterm_of ctxt (HOLogic.mk_Trueprop (ref_by_inst $ spec $ impl))
+          val goal = Goal.init  statement
+          val rct_refine = Method.method ctxt (Token.make_src (@{method rct_refine}, Position.start) [])
+          val goal_seq = rct_refine ctxt [] (ctxt, goal)
+      in case Seq.pull goal_seq of
+            NONE => (* proof method failed, try to construct counterexample *) obtainCounterexample ctxt goal |>> SOME
+          | SOME (Seq.Result (ctxt, goal), _) => (* proof method succeeded, do we have a finished goal? *)
+              if Thm.no_prems goal then
+                (* This looks like a finished goal, convert it to a finished theorem and save it *)
+                let val finished_goal = Goal.finish ctxt goal
+                    val _ = writeln (Thm.string_of_thm ctxt finished_goal)
+                    fun extract_name term = XML.content_of (YXML.parse_body (Syntax.string_of_term ctxt term))
+                    fun sanitize_ident name = if Symbol_Pos.is_identifier name then name else SHA1.rep (SHA1.digest name)
+                    val impl_ident = sanitize_ident (extract_name impl)
+                    val spec_ident = sanitize_ident (extract_name spec)
+                    val name = impl_ident ^ "_refines_" ^ spec_ident
+                    val binding = Binding.name name
+                    val _ = @{print writeln} name
+                    val ((bound_name, _), ctxt) = Local_Theory.note ((binding, []), [finished_goal]) ctxt
+                    val _ = @{print writeln} bound_name
+                in (NONE, ctxt) end
+              else (* proof method didn't finish the proof, try to construct counterexample *) (NONE, ctxt)
+          | SOME (Seq.Error err, _) => let val _ = warning (err ()) in obtainCounterexample ctxt goal |>> SOME end
+      end
+\<close>
+
+ML \<open>fun checkTraceOf ctxt (impl : term) (trace : term list)  = (NONE, ctxt)\<close>
 
 end
 
@@ -496,35 +441,56 @@ ML \<open>fun traceToProcess (trace : term list) =
           else 
             @{term csync} $ (hd trace) $ traceToProcess (tl trace)\<close>
 
-
 ML \<open>structure TraceSet = Set(type key = term list val ord = list_ord Term_Ord.fast_term_ord)\<close>
+ML \<open>structure TermSet = Set(type key = term val ord = Term_Ord.fast_term_ord)\<close>
 
-ML \<open>fun testGeneration rct muts rwd n = 
+ML \<open>fun testGeneration ctxt rct muts rwd n = 
       let val rctType = fastype_of rct
-          val feasibleTraces = Unsynchronized.ref TraceSet.empty
-          val infeasibleTraces = Unsynchronized.ref TraceSet.empty
-      in while TraceSet.size (!feasibleTraces) < n do (
-        let val tracesThenAny =
-                  map (fn trace => @{term "cseq"} $ traceToProcess trace $
-                    @{term Chaos}) (TraceSet.dest (!infeasibleTraces))
-            val infeasibleProcess = @{term Sup} $ (HOLogic.mk_set rctType tracesThenAny)
-            val robochartPlusTraces = @{term "(\<sqinter>)"} $ rct $ infeasibleProcess
-            val testTraces =
-                  map_filter (fn mutant => checkRefinement robochartPlusTraces mutant) muts
-            val checkTrace = fn trace => 
-                  case checkTraceOf rwd trace of
-                      NONE => (SOME trace, NONE)
-                    | SOME counterexamplePrefix => (NONE, SOME counterexamplePrefix)
-            val (fts, its) =
-                  apply2 (TraceSet.make o (map_filter I)) (map_split checkTrace testTraces)
-        in
-          feasibleTraces := TraceSet.merge (!feasibleTraces, fts);
-          infeasibleTraces := TraceSet.merge (!infeasibleTraces, its)
-        end
-      ); TraceSet.dest (!feasibleTraces)
+          fun testGenLoop ctxt mutsToCheck refiningMuts failedMuts feasibleTrs infeasibleTrs n =
+            let (*val tracesThenAny =
+                      map (fn trace => @{term "cseq"} $ traceToProcess trace $
+                        @{term Chaos}) (TraceSet.dest (infeasibleTrs))
+                val infeasibleProcess = @{term Sup} $ (HOLogic.mk_set rctType tracesThenAny)
+                val robochartPlusTraces = @{term "(\<sqinter>)"} $ rct $ infeasibleProcess*)
+                val robochartPlusTraces = rct
+                fun checkMutant mut (refMuts, failMuts, traces, ctxt) = 
+                  case checkRefinement ctxt robochartPlusTraces mut of
+                      (NONE, ctxt) => (
+                        (*writeln ("refining mutant: " ^ (Syntax.string_of_term ctxt mut));*)
+                        (TermSet.insert mut refMuts, failedMuts, traces, ctxt))
+                    | (SOME NONE, ctxt) => (
+                        (*writeln ("failed mutant: " ^ (Syntax.string_of_term ctxt mut));*)
+                        (refMuts, TermSet.insert mut failedMuts, traces, ctxt))
+                    | (SOME (SOME trace), ctxt) => (
+                        (*writeln ("trace generated: " ^ (String.concatWith " \<rightarrow> " (map (Pretty.pure_string_of o Syntax.pretty_term ctxt) trace)));*)
+                        (refMuts, failedMuts, TraceSet.insert trace traces, ctxt))
+                val (refMuts, failMuts, traces, ctxt) =
+                      TermSet.fold checkMutant mutsToCheck (refiningMuts, failedMuts, TraceSet.empty, ctxt)
+                fun checkTrace trace (fts, its, ctxt) =
+                  case checkTraceOf ctxt rwd trace of
+                      (NONE, ctxt) => (
+                        (*writeln ("feasible trace: " ^ (String.concatWith " \<rightarrow> " (map (Pretty.pure_string_of o Syntax.pretty_term ctxt) trace)));*)
+                        (TraceSet.insert trace fts, its, ctxt))
+                    | (SOME counterexamplePrefix, ctxt) => (
+                        (*writeln ("infeasible trace counterexample: " ^ (String.concatWith " \<rightarrow> " (map (Pretty.pure_string_of o Syntax.pretty_term ctxt) counterexamplePrefix)));*)
+                        (fts, TraceSet.insert counterexamplePrefix its, ctxt))
+                val (fts, its, ctxt) = TraceSet.fold checkTrace traces (feasibleTrs, infeasibleTrs, ctxt)
+                val newMutsToCheck = TermSet.subtract failMuts (TermSet.subtract refMuts mutsToCheck)
+            in if n > 1 then testGenLoop ctxt newMutsToCheck refMuts failMuts fts its (n-1) else (refMuts, failMuts, fts, its, ctxt)
+            end
+          val (refMuts, failMuts, fts, its, ctxt) =
+            testGenLoop ctxt (TermSet.make muts) TermSet.empty TermSet.empty TraceSet.empty TraceSet.empty n
+          val term_string = Pretty.pure_string_of o Syntax.pretty_term ctxt
+          fun traceToString trace = String.concatWith " \<rightarrow> " (map term_string trace)
+      in
+        writeln "Feasible Traces Generated:";
+        map (fn trace => (writeln ("  " ^ (traceToString trace)))) (TraceSet.dest fts);
+        writeln "Refining mutants:";
+        map (fn t => (writeln ("  " ^ (term_string t)))) (TermSet.dest refMuts);
+        ctxt
       end\<close>
 
-(* writeln ( (String.concatWith ", \n" (map (fn s => "[" ^ String.concatWith ", " (map (Syntax.string_of_term @{context}) s) ^ "]") (TraceSet.dest (!feasibleTraces)))) ) *)
+subsection \<open>Testing the Test Generation Algorithm\<close>
 
 context rescueDrone
 begin
@@ -536,7 +502,6 @@ context
   defines "TURN \<equiv> 1"
 begin
 
-term RescueDrone_mTransTarget_Output0
 
 ML \<open>val RescueDroneMutants = [
     @{term RescueDrone_mTransTarget_Output0},
@@ -551,16 +516,4 @@ ML \<open>val RescueDroneMutants = [
     @{term RescueDrone_mTransTarget_Output9}
   ]\<close>
 
-ML_val \<open>let val rct = @{term RescueDrone}
-            val muts = RescueDroneMutants
-            val rwd = @{term RoboWorld}
-            val n = 1
-            val rctType = fastype_of rct
-            val feasibleTraces = Unsynchronized.ref []
-            val infeasibleTraces = Unsynchronized.ref []
-            val tracesThenAny = map (fn trace => @{term "cseq"} $ traceToProcess trace $ @{term Chaos}) (!infeasibleTraces)
-            val infeasibleProcess = @{term Sup} $ (HOLogic.mk_set rctType tracesThenAny)
-        in infeasibleProcess end\<close>
-
-ML \<open>testGeneration\<close>
-ML_val \<open>testGeneration @{term RescueDrone} RescueDroneMutants @{term RoboWorld} 1\<close>
+local_setup \<open>fn ctxt => testGeneration ctxt @{term RescueDrone} RescueDroneMutants @{term RoboWorld} 1\<close>
