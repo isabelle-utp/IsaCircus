@@ -1,5 +1,7 @@
 theory TestGen
   imports IsaCircus
+  keywords "generate_tests_rct" :: thy_decl
+    and "RoboChart" "Mutants" "RoboWorld" "Iterations"
 begin
 
 declare [[literal_variables=true]]
@@ -376,8 +378,8 @@ definition Mapping :: "('ch, 'st) action" where
     land_OutputEventMapping))"
 
 
-definition RoboWorld :: "('ch, 'st) action" where
-  "RoboWorld = Environment \<lbrakk> \<^bold>v \<parallel> \<lbrace> setVel, setAngVel, proceed \<rbrace> \<parallel> \<^bold>0 \<rbrakk> Mapping"
+definition RescueRoboWorld :: "('ch, 'st) action" where
+  "RescueRoboWorld = Environment \<lbrakk> \<^bold>v \<parallel> \<lbrace> setVel, setAngVel, proceed \<rbrace> \<parallel> \<^bold>0 \<rbrakk> Mapping"
 
 end
 
@@ -516,4 +518,41 @@ ML \<open>val RescueDroneMutants = [
     @{term RescueDrone_mTransTarget_Output9}
   ]\<close>
 
-local_setup \<open>fn ctxt => testGeneration ctxt @{term RescueDrone} RescueDroneMutants @{term RoboWorld} 1\<close>
+ML_val \<open>Syntax.parse\<close>
+ML_val \<open>Parse.term\<close>
+ML_val \<open>Parse.$$$\<close>
+ML_val \<open>Word.toInt\<close>
+ML_val \<open>((Parse.$$$ "RoboChart" -- Parse.$$$ "=")  |-- Parse.term)
+  >> (fn rct => fn ctxt =>
+      let val rct_term = Syntax.read_term ctxt rct
+      in testGeneration ctxt rct_term RescueDroneMutants @{term RoboWorld} 1
+      end)\<close>
+
+ML \<open>Outer_Syntax.local_theory \<^command_keyword>\<open>generate_tests_rct\<close>
+  "generates tests from the semantics of a RoboChart model and its mutants, incorporating a RoboWorld model"
+  ((((Parse.$$$ "RoboChart" -- Parse.$$$ "=")  |-- Parse.term)
+    -- ((Parse.$$$ "Mutants" -- Parse.$$$ "=")  |-- Parse.list1 Parse.term)
+    -- ((Parse.$$$ "RoboWorld" -- Parse.$$$ "=")  |-- Parse.term)
+    -- ((Parse.$$$ "Iterations" -- Parse.$$$ "=")  |-- Parse.nat))
+  >> (fn (((rct, muts), rwd), n) => fn ctxt =>
+      let val rct_term = Syntax.read_term ctxt rct
+          val mut_terms = map (Syntax.read_term ctxt) muts
+          val rwd_term = Syntax.read_term ctxt rwd
+      in testGeneration ctxt rct_term mut_terms rwd_term n
+      end))\<close>
+
+generate_tests_rct
+  RoboChart = "RescueDrone"
+  Mutants =
+    "RescueDrone_mTransTarget_Output0",
+    "RescueDrone_mTransTarget_Output1",
+    "RescueDrone_mTransTarget_Output2",
+    "RescueDrone_mTransTarget_Output3",
+    "RescueDrone_mTransTarget_Output4",
+    "RescueDrone_mTransTarget_Output5",
+    "RescueDrone_mTransTarget_Output6",
+    "RescueDrone_mTransTarget_Output7",
+    "RescueDrone_mTransTarget_Output8",
+    "RescueDrone_mTransTarget_Output9"
+  RoboWorld = "RescueRoboWorld"
+  Iterations = 1
