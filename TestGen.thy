@@ -171,7 +171,15 @@ definition RescueDrone_mTransTarget_Output9 :: "('ch, 'st) action" where
       await_trigger((origin\<^bold>.In \<rightarrow> (turnBackCall \<rightarrow> Wait(TURN))) ;; (land\<^bold>.Out \<rightarrow> Skip)) ;;
       X)"
 
+lemmas rct_defs = RescueDrone_def RescueDrone_mTransTarget_Output0_def RescueDrone_mTransTarget_Output1_def
+  RescueDrone_mTransTarget_Output2_def RescueDrone_mTransTarget_Output3_def
+  RescueDrone_mTransTarget_Output4_def RescueDrone_mTransTarget_Output5_def
+  RescueDrone_mTransTarget_Output6_def RescueDrone_mTransTarget_Output7_def
+  RescueDrone_mTransTarget_Output8_def RescueDrone_mTransTarget_Output9_def
+
 end
+
+
 
 section \<open>RescueDrone RoboWorld\<close>
 
@@ -391,7 +399,8 @@ dataspace rescueDrone = rescueDroneRoboChart + rescueDroneRoboWorld +
 context rescueDrone
 begin
 
-method rct_refine = fail
+
+method rct_refine = (simp?, unfold rct_defs, rule ref_preorder.order_refl)
 method rct_refine_by_trace = fail
 method rct_simp_counterexample = clarsimp
 
@@ -401,6 +410,12 @@ ML \<open>fun obtainCounterexample ctxt goal = (SOME [
     @{term "prism_build tock ()"}
   ], ctxt)\<close>
 
+ML \<open>fun term_to_name ctxt term =
+      let val text = XML.content_of (YXML.parse_body (Syntax.string_of_term ctxt term))
+          val ident_tokens = String.tokens (not o Symbol.is_letdig o str) text
+      in if Symbol_Pos.is_identifier text then text else (hd ident_tokens) ^ "_" ^ (SHA1.rep (SHA1.digest text))
+      end\<close>
+          
 ML \<open>fun checkRefinement ctxt (spec : term) (impl : term) =
       let val spec_type = Term.fastype_of spec
           val ref_by = Logic.varify_global @{term ref_by}
@@ -417,16 +432,11 @@ ML \<open>fun checkRefinement ctxt (spec : term) (impl : term) =
               if Thm.no_prems goal then
                 (* This looks like a finished goal, convert it to a finished theorem and save it *)
                 let val finished_goal = Goal.finish ctxt goal
-                    val _ = writeln (Thm.string_of_thm ctxt finished_goal)
-                    fun extract_name term = XML.content_of (YXML.parse_body (Syntax.string_of_term ctxt term))
-                    fun sanitize_ident name = if Symbol_Pos.is_identifier name then name else SHA1.rep (SHA1.digest name)
-                    val impl_ident = sanitize_ident (extract_name impl)
-                    val spec_ident = sanitize_ident (extract_name spec)
+                    val impl_ident = term_to_name ctxt impl
+                    val spec_ident = term_to_name ctxt spec
                     val name = impl_ident ^ "_refines_" ^ spec_ident
                     val binding = Binding.name name
-                    val _ = @{print writeln} name
                     val ((bound_name, _), ctxt) = Local_Theory.note ((binding, []), [finished_goal]) ctxt
-                    val _ = @{print writeln} bound_name
                 in (NONE, ctxt) end
               else (* proof method didn't finish the proof, try to construct counterexample *) (NONE, ctxt)
           | SOME (Seq.Error err, _) => let val _ = warning (err ()) in obtainCounterexample ctxt goal |>> SOME end
@@ -437,11 +447,11 @@ ML \<open>fun checkTraceOf ctxt (impl : term) (trace : term list)  = (NONE, ctxt
 
 end
 
-ML \<open>fun traceToProcess (trace : term list) =
+ML \<open>fun traceToProcess typ (trace : term list) =
           if null trace then
-            @{term Skip}
+            Const (@{const_name Skip}, typ)
           else 
-            @{term csync} $ (hd trace) $ traceToProcess (tl trace)\<close>
+            Const (@{const_name csync}, typ --> typ --> typ) $ (hd trace) $ traceToProcess typ (tl trace)\<close>
 
 ML \<open>structure TraceSet = Set(type key = term list val ord = list_ord Term_Ord.fast_term_ord)\<close>
 ML \<open>structure TermSet = Set(type key = term val ord = Term_Ord.fast_term_ord)\<close>
@@ -449,12 +459,15 @@ ML \<open>structure TermSet = Set(type key = term val ord = Term_Ord.fast_term_o
 ML \<open>fun testGeneration ctxt rct muts rwd n = 
       let val rctType = fastype_of rct
           fun testGenLoop ctxt mutsToCheck refiningMuts failedMuts feasibleTrs infeasibleTrs n =
-            let (*val tracesThenAny =
-                      map (fn trace => @{term "cseq"} $ traceToProcess trace $
-                        @{term Chaos}) (TraceSet.dest (infeasibleTrs))
-                val infeasibleProcess = @{term Sup} $ (HOLogic.mk_set rctType tracesThenAny)
-                val robochartPlusTraces = @{term "(\<sqinter>)"} $ rct $ infeasibleProcess*)
-                val robochartPlusTraces = rct
+            let val tracesThenAny =
+                      map (fn trace => Const (@{const_name cseq}, rctType --> rctType --> rctType) $ traceToProcess rctType trace $
+                        Const (@{const_abbrev Chaos}, rctType)) (TraceSet.dest (infeasibleTrs))
+                val infeasibleProcess = Const (@{const_name Sup}, (HOLogic.mk_setT rctType) --> rctType) $ (HOLogic.mk_set rctType tracesThenAny)
+                val robochartPlusTraces = 
+                  if null tracesThenAny then
+                    rct
+                  else
+                    Const (@{const_name "sup"}, rctType --> rctType --> rctType) $ rct $ infeasibleProcess
                 fun checkMutant mut (refMuts, failMuts, traces, ctxt) = 
                   case checkRefinement ctxt robochartPlusTraces mut of
                       (NONE, ctxt) => (
@@ -497,6 +510,9 @@ subsection \<open>Testing the Test Generation Algorithm\<close>
 context rescueDrone
 begin
 
+lemma "RescueDrone \<sqinter> \<Sqinter> {} \<sqsubseteq> RescueDrone_mTransTarget_Output1"
+  by (simp, rct_refine)
+
 context
   defines "DELIVERY \<equiv> 2"
   defines "LV \<equiv> 1"
@@ -517,16 +533,6 @@ ML \<open>val RescueDroneMutants = [
     @{term RescueDrone_mTransTarget_Output8},
     @{term RescueDrone_mTransTarget_Output9}
   ]\<close>
-
-ML_val \<open>Syntax.parse\<close>
-ML_val \<open>Parse.term\<close>
-ML_val \<open>Parse.$$$\<close>
-ML_val \<open>Word.toInt\<close>
-ML_val \<open>((Parse.$$$ "RoboChart" -- Parse.$$$ "=")  |-- Parse.term)
-  >> (fn rct => fn ctxt =>
-      let val rct_term = Syntax.read_term ctxt rct
-      in testGeneration ctxt rct_term RescueDroneMutants @{term RoboWorld} 1
-      end)\<close>
 
 ML \<open>Outer_Syntax.local_theory \<^command_keyword>\<open>generate_tests_rct\<close>
   "generates tests from the semantics of a RoboChart model and its mutants, incorporating a RoboWorld model"
@@ -556,3 +562,5 @@ generate_tests_rct
     "RescueDrone_mTransTarget_Output9"
   RoboWorld = "RescueRoboWorld"
   Iterations = 1
+
+print_theorems
