@@ -37,12 +37,13 @@ consts
   cInput     :: "('a, 'e) channel \<Rightarrow> ('a \<Rightarrow> (('s \<Rightarrow> bool) \<times> 'action)) \<Rightarrow> 'action"
   cOutput    :: "('a, 'e) channel \<Rightarrow> ('a, 's) expr \<Rightarrow> 'action \<Rightarrow> 'action"
   cSync      :: "(unit, 'e) channel \<Rightarrow> 'action \<Rightarrow> 'action"
+  cExtChoice :: "'action \<Rightarrow> 'action \<Rightarrow> 'action" 
   cIChoice   :: "'i set \<Rightarrow> ('i \<Rightarrow> 'action) \<Rightarrow> 'action"
   cEChoice   :: "'i set \<Rightarrow> ('i \<Rightarrow> 'action) \<Rightarrow> 'action"
   cRenaming  :: "('e \<leftrightarrow> 'f) \<Rightarrow> 'action \<Rightarrow> 'action"
   cHide      :: "'action \<Rightarrow> 'e set \<Rightarrow> 'action"
   cParallel  :: "'action \<Rightarrow> 'e set \<Rightarrow> 'action \<Rightarrow> 'action"
-  cInterrupt :: "'action \<Rightarrow> 'action \<Rightarrow> 'action" (infixl "\<triangle>" 55) 
+  cInterrupt :: "'action \<Rightarrow> 'action \<Rightarrow> 'action" 
 
 subsection \<open> Syntax Translations \<close>
 
@@ -55,9 +56,11 @@ syntax
   "_cInterleave" :: "logic \<Rightarrow> logic \<Rightarrow> logic" (infixl "\<interleave>" 59)
   "_cHide"       :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<Zhide> _" [60, 61] 60)
   "_cRenaming"   :: "logic \<Rightarrow> rnenum \<Rightarrow> logic" ("_ [_]" [60, 0] 61)
+  "_cInterrupt"  :: "logic \<Rightarrow> logic \<Rightarrow> logic" (infixl "\<triangle>" 55)
+  "_cExtChoice"  :: "logic \<Rightarrow> logic \<Rightarrow> logic" (infixl "\<box>" 55)
 
 translations 
-  "_cGuard b P"      == "CONST cGuard b P"
+  "_cGuard b P"      == "CONST cGuard (b)\<^sub>e P"
   "_cInput c x P"    == "CONST cInput c (\<lambda> x. ((CONST True)\<^sub>e, P))"
   "_cOutput c e P"   == "CONST cOutput c (e)\<^sub>e P"
   "_cSync c P"       == "CONST cSync c P"
@@ -65,5 +68,7 @@ translations
   "_cParallel P A Q" == "CONST cParallel P A Q"
   "_cHide P A"       == "CONST cHide P A"
   "_cRenaming P f"   == "CONST cRenaming P f"
+  "_cExtChoice P Q"  == "CONST cExtChoice P Q"
+  "_cInterrupt P Q"  == "CONST cInterrupt P Q"
 
 end
