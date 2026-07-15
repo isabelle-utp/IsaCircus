@@ -1,6 +1,10 @@
+section \<open> Abstract Syntax for IsaCircus \<close>
+
 theory IsaCircus_Syntax
   imports "Abstract_Prog_Syntax.Abstract_Prog_Syntax" "Circus_Toolkit.Circus_Toolkit"
 begin
+
+subsection \<open> Disable unwanted syntax \<close>
 
 bundle Circus_Syntax
 begin
@@ -20,6 +24,8 @@ no_syntax
 
 end
 
+subsection \<open> Abstract Constants \<close>
+
 type_synonym ('a, 'e) channel = "'a \<Longrightarrow>\<^sub>\<triangle> 'e"
 
 consts
@@ -37,6 +43,8 @@ consts
   cHide      :: "'action \<Rightarrow> 'e set \<Rightarrow> 'action"
   cParallel  :: "'action \<Rightarrow> 'e set \<Rightarrow> 'action \<Rightarrow> 'action"
   cInterrupt :: "'action \<Rightarrow> 'action \<Rightarrow> 'action" (infixl "\<triangle>" 55) 
+
+subsection \<open> Syntax Translations \<close>
 
 syntax 
   "_cGuard"      :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<^bold>& _" [60, 61] 60)
