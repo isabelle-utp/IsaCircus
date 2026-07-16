@@ -78,6 +78,9 @@ definition cInterleave :: "'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) actio
 definition cParallelIte :: "'e set \<Rightarrow> 'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where
 "cParallelIte cs A P = Finite_Set.fold (\<lambda> i Q. cparallel (P i) cs Q) Skip A"
 
+lift_definition cprefix :: "'e \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
+  is "\<lambda> c P. PrefixCSP (\<guillemotleft>c\<guillemotright>)\<^sub>e P" by (simp add: closure)
+
 lift_definition csync :: "(unit, 'e) chan \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
   is "\<lambda> c P. PrefixCSP (c\<cdot>())\<^sub>u P" by (simp add: closure)
 

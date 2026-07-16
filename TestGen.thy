@@ -399,10 +399,12 @@ dataspace rescueDrone = rescueDroneRoboChart + rescueDroneRoboWorld +
 context rescueDrone
 begin
 
+print_context
 
 method rct_refine = (simp?, unfold rct_defs, rule ref_preorder.order_refl)
 method rct_refine_by_trace = fail
 method rct_simp_counterexample = clarsimp
+
 
 ML \<open>fun obtainCounterexample ctxt goal = (SOME [
     @{term "prism_build takeoff Out"},
@@ -413,16 +415,17 @@ ML \<open>fun obtainCounterexample ctxt goal = (SOME [
 ML \<open>fun term_to_name ctxt term =
       let val text = XML.content_of (YXML.parse_body (Syntax.string_of_term ctxt term))
           val ident_tokens = String.tokens (not o Symbol.is_letdig o str) text
-      in if Symbol_Pos.is_identifier text then text else (hd ident_tokens) ^ "_" ^ (SHA1.rep (SHA1.digest text))
+      in
+        if Symbol_Pos.is_identifier text then 
+          text 
+        else
+          (if null ident_tokens then "term" else (hd ident_tokens) ^ "_") ^ (SHA1.rep (SHA1.digest text))
       end\<close>
           
 ML \<open>fun checkRefinement ctxt (spec : term) (impl : term) =
       let val spec_type = Term.fastype_of spec
-          val ref_by = Logic.varify_global @{term ref_by}
-          val ref_by_type = Term.fastype_of ref_by
-          val insts = Sign.typ_match @{theory} (#1 (Term.dest_funT ref_by_type), spec_type) Vartab.empty
-          val ref_by_inst = Envir.subst_term_types insts ref_by
-          val statement = Thm.cterm_of ctxt (HOLogic.mk_Trueprop (ref_by_inst $ spec $ impl))
+          val ref_by = Const (@{const_name ref_by}, spec_type --> spec_type --> @{typ bool})
+          val statement = Thm.cterm_of ctxt (HOLogic.mk_Trueprop (ref_by $ spec $ impl))
           val goal = Goal.init  statement
           val rct_refine = Method.method ctxt (Token.make_src (@{method rct_refine}, Position.start) [])
           val goal_seq = rct_refine ctxt [] (ctxt, goal)
@@ -451,7 +454,9 @@ ML \<open>fun traceToProcess typ (trace : term list) =
           if null trace then
             Const (@{const_name Skip}, typ)
           else 
-            Const (@{const_name csync}, typ --> typ --> typ) $ (hd trace) $ traceToProcess typ (tl trace)\<close>
+            let val evt_typ = fastype_of (hd trace)
+            in Const (@{const_name cprefix}, evt_typ --> typ --> typ) $ (hd trace) $ traceToProcess typ (tl trace)
+            end\<close>
 
 ML \<open>structure TraceSet = Set(type key = term list val ord = list_ord Term_Ord.fast_term_ord)\<close>
 ML \<open>structure TermSet = Set(type key = term val ord = Term_Ord.fast_term_ord)\<close>
@@ -510,8 +515,12 @@ subsection \<open>Testing the Test Generation Algorithm\<close>
 context rescueDrone
 begin
 
-lemma "RescueDrone \<sqinter> \<Sqinter> {} \<sqsubseteq> RescueDrone_mTransTarget_Output1"
-  by (simp, rct_refine)
+term "takeoff\<^bold>.out \<rightarrow> tock\<^bold>.() \<rightarrow> tock\<^bold>.() \<rightarrow> Skip"
+
+  lemma "tock\<^bold>.() \<rightarrow> Skip \<sqsubseteq> takeoff\<^bold>.out \<rightarrow> Skip"
+    nitpick
+
+
 
 context
   defines "DELIVERY \<equiv> 2"
