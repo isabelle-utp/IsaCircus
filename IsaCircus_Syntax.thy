@@ -50,7 +50,6 @@ consts
   OutputPrefix :: "('a, 'e) channel \<Rightarrow> ('a, 's) expr \<Rightarrow> 'action \<Rightarrow> 'action"
   SyncPrefix   :: "(unit, 'e) channel \<Rightarrow> 'action \<Rightarrow> 'action"
   ExtChoice    :: "'action \<Rightarrow> 'action \<Rightarrow> 'action" 
-  IntChoiceIdx :: "'i set \<Rightarrow> ('i \<Rightarrow> 'action) \<Rightarrow> 'action"
   ExtChoiceIdx :: "'i set \<Rightarrow> ('i \<Rightarrow> 'action) \<Rightarrow> 'action"
   Rename       :: "('e \<leftrightarrow> 'f) \<Rightarrow> 'action \<Rightarrow> 'action"
   Hide         :: "'action \<Rightarrow> 'e set \<Rightarrow> 'action"
