@@ -13,7 +13,9 @@ begin
 
 unbundle no lattice_syntax
 unbundle UTP_Syntax
+unbundle Circus_Syntax
 
+no_notation extChoice (infixl "\<box>" 59)
 no_notation funcset (infixr "\<rightarrow>" 60)
 
 subsection \<open> Types \<close>
@@ -43,20 +45,24 @@ lift_definition cExtChoiceIdx :: "'a set \<Rightarrow> ('a \<Rightarrow> ('e, 's
 lift_definition crename :: "('e, 's) action \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('f, 's) action" is RenameCSP by (simp add: closure)
 lift_definition chide :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action" is "HideCSP" by (simp add:closure)
 
-lift_definition cactpar :: "('e, 's) action \<Rightarrow> ('a \<Longrightarrow> 's) \<Rightarrow> 'e set \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
-is "\<lambda> P ns1 cs ns2 Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<^sub>C ns1 cs ns2\<^esub> Q else Miracle" by (simp add: closure)
+lift_definition cactpar :: "('a \<Longrightarrow> 's) \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
+is "\<lambda> ns1 ns2 cs P Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<^sub>C ns1 cs ns2\<^esub> Q else Miracle" by (simp add: closure)
 
-lift_definition cparallel :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
-is "\<lambda> P cs Q. P \<lbrakk>cs\<rbrakk>\<^sub>C Q" by (simp add: closure)
+lift_definition cparallel :: "'e set \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
+is "\<lambda> cs P Q. P \<lbrakk>cs\<rbrakk>\<^sub>C Q" by (simp add: closure)
 
-lift_definition cinput :: "('a, 'e) channel \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
-  is "\<lambda> c P. InputCSP c (\<lambda> v. (True)\<^sub>e) P" by (simp add: closure)
+lift_definition cinput :: "('a, 'e) channel \<Rightarrow> ('a \<Rightarrow> (('s \<Rightarrow> bool) \<times> ('e, 's) action)) \<Rightarrow> ('e, 's) action"
+  is "\<lambda> c BP. InputCSP c (\<lambda> v. fst (BP v)) (\<lambda> v. (snd (BP v)))"
+  by (simp add: InputCSP_NCSP pred_prod_beta) 
 
 lift_definition coutput :: "('a, 'e) channel \<Rightarrow> ('a, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
   is OutputCSP by (simp add: closure)
 
 lift_definition csync :: "(unit, 'e) channel \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
   is "\<lambda> c P. PrefixCSP (c\<cdot>())\<^sub>u P" by (simp add: closure)
+
+lift_definition cprefix :: "'e \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
+  is "\<lambda> c P. PrefixCSP (\<guillemotleft>c\<guillemotright>)\<^sub>e P" by (simp add: closure)
 
 lift_definition guardedchoice_action :: "'e set \<Rightarrow> ('e \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is GuardedChoiceCSP
   by (simp add: closure)
@@ -81,6 +87,9 @@ adhoc_overloading
   OutputPrefix \<rightleftharpoons> coutput and
   SyncPrefix \<rightleftharpoons> csync and
   Guard \<rightleftharpoons> cguard
+
+syntax "_cassume" :: "logic \<Rightarrow> logic" ("{_}\<^sub>C")
+translations "_cassume p" == "CONST cassume (p)\<^sub>e"
 
 instantiation action :: (type, type) lattice
 begin
