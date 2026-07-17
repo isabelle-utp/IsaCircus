@@ -6,6 +6,7 @@ theory Circus_Actions
     Circus_Hiding
     Circus_Renaming
     Circus_Parallel
+    IsaCircus_Syntax
     "Circus_Toolkit.Channels_Events"
     "Circus_Toolkit.Action_Command"
 begin 
@@ -20,102 +21,66 @@ subsection \<open> Types \<close>
 typedef ('e, 's) action = "{P :: ('s, 'e) sfrd hrel. P is NCSP}"
   by blast
 
-type_synonym ('a, 'e) chan = "'a \<Longrightarrow>\<^sub>\<triangle> 'e"
-
 setup_lifting type_definition_action
 
 subsection \<open> Semantic Constructors \<close>
 
-lift_definition Skip :: "('e, 's) action" is "utp_sfrd_healths.Skip" by (simp add: closure)
-
-lift_definition Stop :: "('e, 's) action" is "utp_sfrd_healths.Stop" by (simp add: closure)
-
+lift_definition cskip :: "('e, 's) action" is "utp_sfrd_healths.Skip" by (simp add: closure)
+lift_definition cstop :: "('e, 's) action" is "utp_sfrd_healths.Stop" by (simp add: closure)
 lift_definition cassigns :: "'s subst \<Rightarrow> ('e, 's) action" is AssignsCSP by (simp add: closure)
-
-adhoc_overloading uassigns == cassigns
-
-lift_definition cseq :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "(;;)" 
-  by (simp add: closure) 
-
-adhoc_overloading useq == cseq
-
-definition cseqIte :: "'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where
-"cseqIte A P = Finite_Set.fold (\<lambda> i. cseq (P i)) Skip A"
-
+lift_definition cseq :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "(;;)" by (simp add: closure) 
 lift_definition cspec :: "('a \<Longrightarrow> 's) \<Rightarrow> 's pred \<Rightarrow> 's pred \<Rightarrow> ('e, 's) action" is SpecC by (simp add: closure)
-
 lift_definition cassume :: "('s \<Rightarrow> \<bool>) \<Rightarrow> ('e, 's) action" is AssumeCircus by (simp add: closure)
-
-lift_definition cond_action :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
+lift_definition ccond :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
   is "\<lambda> P b Q. P \<triangleleft> b \<triangleright>\<^sub>R Q" by (simp add: closure)
 
-adhoc_overloading ucond == cond_action
-
-lift_definition cextchoice :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" (infixl "\<box>" 59) is "\<lambda> P Q. P \<box> Q"
+lift_definition cextchoice :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "\<lambda> P Q. extChoice P Q"
   by (simp add: closure)
 
-lift_definition cExtChoice :: "'a set \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is "EXTCHOICE"
+lift_definition cExtChoiceIdx :: "'a set \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is "EXTCHOICE"
   by (simp add: closure)
 
-lift_definition crenaming :: "('e, 's) action \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('f, 's) action" is RenameCSP by (simp add: closure)
-
+lift_definition crename :: "('e, 's) action \<Rightarrow> ('e \<leftrightarrow> 'f) \<Rightarrow> ('f, 's) action" is RenameCSP by (simp add: closure)
 lift_definition chide :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action" is "HideCSP" by (simp add:closure)
 
 lift_definition cactpar :: "('e, 's) action \<Rightarrow> ('a \<Longrightarrow> 's) \<Rightarrow> 'e set \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
 is "\<lambda> P ns1 cs ns2 Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<^sub>C ns1 cs ns2\<^esub> Q else Miracle" by (simp add: closure)
 
-lift_definition cactinter :: "('e, 's) action \<Rightarrow> ('a \<Longrightarrow> 's) \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
-is "\<lambda> P ns1 ns2 Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<^sub>C ns1 {} ns2\<^esub> Q else Miracle" by (simp add: closure)
-
 lift_definition cparallel :: "('e, 's) action \<Rightarrow> 'e set \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
 is "\<lambda> P cs Q. P \<lbrakk>cs\<rbrakk>\<^sub>C Q" by (simp add: closure)
 
-definition "cinterleave P Q = cparallel P {} Q"
-
-definition cInterleave :: "'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where
-"cInterleave A P = Finite_Set.fold (\<lambda> i. cinterleave (P i)) Skip A"
-
-definition cParallelIte :: "'e set \<Rightarrow> 'i set \<Rightarrow> ('i \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where
-"cParallelIte cs A P = Finite_Set.fold (\<lambda> i Q. cparallel (P i) cs Q) Skip A"
-
-lift_definition cprefix :: "'e \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
-  is "\<lambda> c P. PrefixCSP (\<guillemotleft>c\<guillemotright>)\<^sub>e P" by (simp add: closure)
-
-lift_definition csync :: "(unit, 'e) chan \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
-  is "\<lambda> c P. PrefixCSP (c\<cdot>())\<^sub>u P" by (simp add: closure)
-
-lift_definition cinput :: "('a, 'e) chan \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
+lift_definition cinput :: "('a, 'e) channel \<Rightarrow> ('a \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
   is "\<lambda> c P. InputCSP c (\<lambda> v. (True)\<^sub>e) P" by (simp add: closure)
 
-lift_definition coutput :: "('a, 'e) chan \<Rightarrow> ('a, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
+lift_definition coutput :: "('a, 'e) channel \<Rightarrow> ('a, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
   is OutputCSP by (simp add: closure)
 
-lift_definition coutinp :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr  \<Rightarrow> ('b \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
-is "\<lambda> c e P. InputCSP c (\<lambda> (x, y) s. x = e s) (\<lambda> (x, y). P y)" by (simp add:closure prod.case_eq_if)
-
-lift_definition cdotinp :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr  \<Rightarrow> ('b \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action"
-is "\<lambda> c e P. InputCSP c (\<lambda> (x, y) s. x = e s) (\<lambda> (x, y). P y)" by (simp add:closure prod.case_eq_if)
-
-lift_definition cdotdot :: "('a \<times> 'b, 'e) chan \<Rightarrow> ('a, 's) expr \<Rightarrow> ('b, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
-is "\<lambda> c e1 e2 P. OutputCSP c (\<lambda> s. (e1 s, e2 s)) P" by (simp add: closure)
-
-definition cdotdotinp :: "('a \<times> 'b \<times> 'c, 'e) chan \<Rightarrow>('a, 's) expr \<Rightarrow> ('b, 's) expr  \<Rightarrow> ('c \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where 
-"cdotdotinp c e1 e2 A = undefined"
-
-definition cdotdotout :: "('a \<times> 'b \<times> 'c, 'e) chan \<Rightarrow>('a, 's) expr \<Rightarrow> ('b, 's) expr \<Rightarrow>('c, 's) expr  \<Rightarrow>  ('e, 's) action \<Rightarrow> ('e, 's) action" where 
-"cdotdotout c e1 e2 e3 A = undefined"
-
-definition cdotdotdotinp :: "('a \<times> 'b \<times> 'c \<times> 'd, 'e) chan \<Rightarrow>('a, 's) expr \<Rightarrow> ('b, 's) expr   \<Rightarrow> ('c, 's) expr \<Rightarrow> ('d \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" where 
-"cdotdotdotinp c e1 e2 e3 A = undefined"
-
-definition cdotdotdotout :: "('a \<times> 'b \<times> 'c \<times> 'd, 'e) chan \<Rightarrow>('a, 's) expr \<Rightarrow> ('b, 's) expr   \<Rightarrow> ('c, 's) expr \<Rightarrow>('d, 's) expr \<Rightarrow>  ('e, 's) action \<Rightarrow> ('e, 's) action" where 
-"cdotdotdotout c e1 e2 e3 e4 A = undefined"
+lift_definition csync :: "(unit, 'e) channel \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
+  is "\<lambda> c P. PrefixCSP (c\<cdot>())\<^sub>u P" by (simp add: closure)
 
 lift_definition guardedchoice_action :: "'e set \<Rightarrow> ('e \<Rightarrow> ('e, 's) action) \<Rightarrow> ('e, 's) action" is GuardedChoiceCSP
   by (simp add: closure)
                                                                              
 lift_definition cguard :: "(bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is GuardCSP
   by (metis NCSP_Guard SEXP_def)               
+
+adhoc_overloading 
+  Spec \<rightleftharpoons> cspec and
+  Skip \<rightleftharpoons> cskip and
+  Stop \<rightleftharpoons> cstop and
+  uassigns \<rightleftharpoons> cassigns and
+  useq \<rightleftharpoons> cseq and
+  ucond \<rightleftharpoons> ccond and
+  ExtChoice \<rightleftharpoons> cextchoice and
+  ExtChoiceIdx \<rightleftharpoons> cExtChoiceIdx and
+  Rename \<rightleftharpoons> crename and
+  Hide \<rightleftharpoons> chide and
+  ParallelAct \<rightleftharpoons> cactpar and
+  Parallel \<rightleftharpoons> cparallel and
+  InputPrefix \<rightleftharpoons> cinput and
+  OutputPrefix \<rightleftharpoons> coutput and
+  SyncPrefix \<rightleftharpoons> csync and
+  Guard \<rightleftharpoons> cguard
 
 instantiation action :: (type, type) lattice
 begin
@@ -199,142 +164,14 @@ lemma refine_action_transfer [transfer_rule]: "rel_fun cr_action (rel_fun cr_act
 
 abbreviation Miracle :: "('a, 'b) action" where "Miracle \<equiv> bot_class.bot"
 
-abbreviation Chaos :: "('a, 'b) action" where "Chaos \<equiv> top_class.top"
+definition cChaos :: "('a, 'b) action" where "cChaos \<equiv> top_class.top"
 
-subsection \<open> Syntax \<close>
-
-bundle Circus_Syntax
-begin
-
-unbundle Expression_Syntax
-
-no_notation disj (infixr "|" 30)
-no_notation conj (infixr "&" 35)
-no_notation funcset (infixr "\<rightarrow>" 60)
-
-no_syntax
-  "_maplet"  :: "['a, 'a] \<Rightarrow> maplet"             ("_ /\<mapsto>/ _")
-  ""         :: "maplet \<Rightarrow> updbind"              ("_")
-  ""         :: "maplet \<Rightarrow> maplets"             ("_")
-  "_Maplets" :: "[maplet, maplets] \<Rightarrow> maplets" ("_,/ _")
-  "_Map"     :: "maplets \<Rightarrow> 'a \<rightharpoonup> 'b"           ("(1[_])")
-
-
-end
-
-no_notation utp_sfrd_extchoice.extChoice (infixl "\<box>" 59)
-
-text \<open> The types of the syntax translations represent categories in the Isabelle
-  parser. 
-  \<^item> @{typ id} is an identifier (i.e. a name)
-  \<^item> @{typ pttrn} is a pattern, which is typically use to pattern 
-    match on a parameter (e.g. @{term "\<lambda> (x, y). f x y"}.
-  \<^item> @{typ logic} corresponds to any term constructable in HOL \<close>
-
-syntax 
- \<comment> \<open> "_cseq" :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ ; _" [50, 51] 50) 
-    no need to define cseq syntax, cseq is overloading useq
-  "_cinterrupt" :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<triangle> _" [50, 51] 50)
-  (*Can interrupt be defined using definition, just like cechoice??*)\<close>
-
-  "_cspec" :: "svids \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_:[_,_]" [100,0,0] 100)
-
-  "_cassume" :: "logic \<Rightarrow> logic" ("{_}\<^sub>C")
-
-  "_cinput" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>?_ \<rightarrow> _" [61, 0, 62] 62)
-
-  "_coutput" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>!_ \<rightarrow> _" [61, 0, 62] 62)
-
-  "_cdot" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>._ \<rightarrow> _" [61, 0, 62] 62)
-  \<comment> \<open>_._ is parsed as a whole, so bolded here to avoid conflict\<close>
-
-  "_coutinp" :: "id \<Rightarrow> logic \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>!_\<^bold>?_ \<rightarrow> _" [61, 0, 0, 62] 62)
-
-  "_cdotinp" :: "id \<Rightarrow> logic \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>._\<^bold>?_ \<rightarrow> _" [61, 200, 200, 62] 62)
-
-
-  "_cdotdot" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>._\<^bold>._ \<rightarrow> _" [61, 200, 200, 62] 62)
-
-
-  "_cdotdotinp" :: "id \<Rightarrow> logic   \<Rightarrow> logic \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>._\<^bold>._\<^bold>?_ \<rightarrow> _" [61, 200,200, 200, 62] 62)
-
-
-  "_cdotdotout" :: "id \<Rightarrow> logic   \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>._\<^bold>._\<^bold>!_ \<rightarrow> _" [61, 200,200, 200, 62] 62)
-
-  "_cdotdotdotinp" :: "id \<Rightarrow> logic \<Rightarrow> logic  \<Rightarrow> logic \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>._\<^bold>._\<^bold>._\<^bold>?_ \<rightarrow> _" [61, 200,200,200, 200, 62] 62)
-
-  "_cdotdotdotout" :: "id \<Rightarrow> logic \<Rightarrow> logic  \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic"   ("_\<^bold>._\<^bold>._\<^bold>._\<^bold>!_ \<rightarrow> _" [61, 200,200,200,200, 62] 62)
-
-  "_csync" :: "id \<Rightarrow> logic \<Rightarrow> logic" ("_ \<rightarrow> _" [61, 62] 61)
-  "_cguard" :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<^bold>& _" [60, 61] 60)
-
-  \<comment> \<open>the order of the parameters does not need to match the definition.\<close>
-  "_crenaming" :: "logic \<Rightarrow> rnenum \<Rightarrow> logic" ("_ [_]" [60, 0] 60)  
-
-  "_chide" :: "logic \<Rightarrow> chans \<Rightarrow> logic" ("_ \<Zhide> \<lbrace>_\<rbrace>" [60, 61] 60)
-
-  "_cparallel" :: "logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk> | _ | \<rbrakk> _" [60, 0,  61] 60)
-  "_par_circus"   :: "logic \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> logic"  ("_ \<lbrakk>_\<parallel>_\<parallel>_\<rbrakk> _" [75,0,0,0,76] 76)
-  "_inter_circus" :: "logic \<Rightarrow> svids \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> logic"  ("_ \<lbrakk>_\<parallel>_\<rbrakk> _" [75,0,0,76] 76)
- 
-  "_cEChoice" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<box> _ \<in> _ \<bullet> _")
-
-  "_cInterleave" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<interleave> _ \<in> _ \<bullet> _" [0, 0, 10] 10) 
-  \<comment> \<open>\<interleave> i\<in>{1..inpSize} \<bullet> NodeIn(l,n,i)\<close>
-  
-  "_cseqIte" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" (";; _ \<in> _ \<bullet> _" [0, 0, 10] 10)
-  \<comment> \<open>;; i\<in>{1..inpSize} \<bullet> NodeIn(l,n,i)\<close>
-
-  "_cParallelIte" :: "logic \<Rightarrow> id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrakk> _ \<rbrakk> _ \<in> _ \<bullet> _" [0, 0, 10] 10)
-  
-  "_cParam" :: "pttrn \<Rightarrow>  logic \<Rightarrow> logic" ("_ \<bullet> _" [10, 0] 10)(*TBC*) 
-
-translations 
-  "_cspec v P Q" == "CONST cspec v (P)\<^sub>e (Q)\<^sub>e"
-  "_cassume e" == "CONST cassume (e)\<^sub>e" 
-
-  "_cinput c x  P" == "CONST cinput c (\<lambda> x. P)"
-  "_coutput c e P" == "CONST coutput c (e)\<^sub>e P"
-  "_coutinp c e x P" == "CONST coutinp c (e)\<^sub>e (\<lambda> x. P)"
-  "_cdotinp c e x P" == "CONST cdotinp c (e)\<^sub>e (\<lambda> x. P)"
-
-  "_cdotdot c e1 e2 P" == "CONST cdotdot c (e1)\<^sub>e (e2)\<^sub>e P" 
-  "_cdotdotinp c e1 e2 x P" == "CONST cdotdotinp c  (e1)\<^sub>e (e2)\<^sub>e (\<lambda> x. P)"
-
-  "_cdotdotout c  e1 e2 e3 P" == "CONST cdotdotout c  (e1)\<^sub>e (e2)\<^sub>e (e3)\<^sub>e P" 
-  "_cdotdotdotinp c  e1 e2 e3 x P" == "CONST cdotdotdotinp c  (e1)\<^sub>e (e2)\<^sub>e (e3)\<^sub>e (\<lambda> x. P)"  
-
-  "_cdotdotdotout c  e1 e2 e3 e4 P" == "CONST cdotdotdotout c  (e1)\<^sub>e (e2)\<^sub>e (e3)\<^sub>e (e4)\<^sub>e P" 
-
-  "_cguard b P" == "CONST cguard (b)\<^sub>e P"
-  "_cdot c e P" == "CONST coutput c (e)\<^sub>e P"
-  "_csync c P" == "CONST csync c P"
-  "_crenaming P rn" == "CONST crenaming P (_rnenum rn)" 
-  "_chide P es" == "CONST chide P (_ch_enum es)"
-  "_cparallel P A Q" == "CONST cparallel P A Q "
-  "_par_circus P ns1 cs ns2 Q" == "CONST cactpar P ns1 cs ns2 Q"
-  "_inter_circus P ns1 ns2 Q" == "CONST cactinter P ns1 ns2 Q"
-  "_cEChoice i A P" == "CONST cExtChoice A (\<lambda> i. P)"
-  "_cInterleave i A P" == "CONST cInterleave A (\<lambda> i. P)"
-
-  "_cseqIte i A P" == "CONST cseqIte A (\<lambda> i. P)"
-
-  "_cParallelIte B i A P" == "CONST cParallelIte B A (\<lambda> i. P)"
-  "_cParam x P" => "\<lambda> x. P"
-
-
-(*Cond action and conditional simplification*)
-(*
-lemma "cond_action (guard_action b P) c (guard_action c Q) =
-      guard_action (if (i=0) then b else c) (if (i=0) then P else Q)"
-  apply transfer
-  sorry
-*)
+adhoc_overloading Chaos \<rightleftharpoons> cChaos
 
 subsection \<open> Normalisation Laws \<close>
 
 (*Lemma 1: Sequential Prefix Normalisation*)
-lemma "(csync e P) ;; Q = csync e (P ;; Q)"
+lemma "(e \<rightarrow> P) ;; Q = e \<rightarrow> (P ;; Q)"
   apply transfer
   apply (simp add: NCSP_implies_CSP PrefixCSP_seq)
   done
