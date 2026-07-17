@@ -9,7 +9,10 @@ subsection \<open> Introduction \<close>
 text \<open> This theory introduces an abstract syntax tree for Circus that is suitable for 
   shallow embeddings developed using Isabelle/UTP and related tools. The approach is
   to create polymorphic constants for each Circus constructor, which can later
-  be instantiated with concrete types. \<close>
+  be instantiated with concrete types. Each constant also has one or more accompanying
+  syntactic constants and syntax translations, which give the mixfix notation for Circus
+  actions and processes. A concrete language can implement the syntax by overloading
+  the polymorphic constants using @{command adhoc_overloading}. \<close>
 
 subsection \<open> Disable unwanted syntax \<close>
 
@@ -36,6 +39,7 @@ subsection \<open> Abstract Constants \<close>
 type_synonym ('a, 'e) channel = "'a \<Longrightarrow>\<^sub>\<triangle> 'e"
 
 consts
+  Spec         :: "('a \<Longrightarrow> 's) \<Rightarrow> ('s \<Rightarrow> bool) \<Rightarrow> ('s \<Rightarrow> bool) \<Rightarrow> 'action"
   Skip         :: "'action" ("Skip")
   Stop         :: "'action" ("Stop")
   Chaos        :: "'action" ("Chaos")
@@ -49,6 +53,7 @@ consts
   ExtChoiceIdx :: "'i set \<Rightarrow> ('i \<Rightarrow> 'action) \<Rightarrow> 'action"
   Rename       :: "('e \<leftrightarrow> 'f) \<Rightarrow> 'action \<Rightarrow> 'action"
   Hide         :: "'action \<Rightarrow> 'e set \<Rightarrow> 'action"
+  ParallelAct  :: "('a \<Longrightarrow> 's) \<Rightarrow> ('b \<Longrightarrow> 's) \<Rightarrow> 'e set \<Rightarrow> 'action \<Rightarrow> 'action \<Rightarrow> 'action"
   Parallel     :: "'e set \<Rightarrow> 'action \<Rightarrow> 'action \<Rightarrow> 'action"
   Interrupt    :: "'action \<Rightarrow> 'action \<Rightarrow> 'action" 
 
@@ -60,33 +65,41 @@ definition Replicate :: "('action \<Rightarrow> 'action \<Rightarrow> 'action) \
 subsection \<open> Syntax Translations \<close>
 
 syntax 
+  "_Spec"           :: "svids \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_:[_,_]" [100,0,0] 100)
   "_Guard"          :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<^bold>& _" [60, 61] 60)
   "_InputPrefix"    :: "chan \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>?_ \<rightarrow> _" [95, 0, 96] 96)
   "_OutputPrefix"   :: "chan \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>!_ \<rightarrow> _" [95, 0, 96] 96)
   "_SyncPrefix"     :: "chan \<Rightarrow> logic \<Rightarrow> logic" ("_ \<rightarrow> _" [95, 96] 96)
+  "_ParallelAct"    :: "logic \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk>_|_|_\<rbrakk> _" [60, 0, 0, 0, 61] 60)
   "_Parallel"       :: "logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk>_\<rbrakk> _" [60, 0,  61] 60)
   "_Interleave"     :: "logic \<Rightarrow> logic \<Rightarrow> logic" (infixl "\<interleave>" 59)
+  "_InterleaveAct"  :: "logic \<Rightarrow> svids \<Rightarrow> svids \<Rightarrow> logic \<Rightarrow> logic" ("_ \<lbrakk>_|_\<rbrakk> _" [60, 0, 0, 61] 60)
   "_Hide"           :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_ \<Zhide> _" [60, 61] 60)
   "_Rename"         :: "logic \<Rightarrow> rnenum \<Rightarrow> logic" ("_ [_]" [60, 0] 61)
   "_Interrupt"      :: "logic \<Rightarrow> logic \<Rightarrow> logic" (infixl "\<triangle>" 55)
   "_ExtChoice"      :: "logic \<Rightarrow> logic \<Rightarrow> logic" (infixl "\<box>" 55)
-  "_InterleaveIter" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<interleave> _ \<in> _ \<bullet> _" [0, 0, 10] 10)
-  "_SequentialIter" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" (";; _ \<in> _ \<bullet> _" [0, 0, 10] 10)
-  "_ParallelIter"   :: "logic \<Rightarrow> id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrakk> _ \<rbrakk> _ \<in> _ \<bullet> _" [0, 0, 10] 10)
+  "_ExtChoiceIdx"   :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<box> _ \<in> _. _" [0, 0, 10] 10)
+  "_InterleaveIter" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<interleave> _ \<in> _. _" [0, 0, 10] 10)
+  "_SequentialIter" :: "id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" (";; _ \<in> _. _" [0, 0, 10] 10)
+  "_ParallelIter"   :: "logic \<Rightarrow> id \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrakk> _ \<rbrakk> _ \<in> _. _" [0, 0, 10] 10)
 
 translations 
-  "_Guard b P"            == "CONST Guard (b)\<^sub>e P"
-  "_InputPrefix c x P"    == "CONST InputPrefix c (\<lambda> x. ((CONST True)\<^sub>e, P))"
-  "_OutputPrefix c e P"   == "CONST OutputPrefix c (e)\<^sub>e P"
-  "_SyncPrefix c P"       == "CONST SyncPrefix c P"
-  "_Interleave P Q"       == "CONST Parallel {} P Q"
-  "_Parallel P A Q"       == "CONST Parallel A P Q"
-  "_Hide P A"             == "CONST Hide P A"
-  "_Rename P f"           == "CONST Rename P f"
-  "_ExtChoice P Q"        == "CONST ExtChoice P Q"
-  "_Interrupt P Q"        == "CONST Interrupt P Q"
-  "_InterleaveIter x I P" == "CONST Replicate (CONST Parallel {}) Skip I (\<lambda> x. P)"
-  "_SequentialIter x I P" == "CONST Replicate (CONST useq) Skip I (\<lambda> x. P)"
-  "_ParallelIter A x I P"   == "CONST Replicate (CONST Parallel A) Skip I (\<lambda> x. P)"
+  "_Spec a p q"                \<rightleftharpoons> "CONST Spec a (p)\<^sub>e (q)\<^sub>e"
+  "_Guard b P"                 \<rightleftharpoons> "CONST Guard (b)\<^sub>e P"
+  "_InputPrefix c x P"         \<rightleftharpoons> "CONST InputPrefix c (\<lambda> x. ((CONST True)\<^sub>e, P))"
+  "_OutputPrefix c e P"        \<rightleftharpoons> "CONST OutputPrefix c (e)\<^sub>e P"
+  "_SyncPrefix c P"            \<rightleftharpoons> "CONST SyncPrefix c P"
+  "_Parallel P A Q"            \<rightleftharpoons> "CONST Parallel A P Q"
+  "_ParallelAct P ns1 A ns2 Q" \<rightleftharpoons> "CONST ParallelAct ns1 ns2 A P Q"
+  "_Interleave P Q"            \<rightleftharpoons> "CONST Parallel {} P Q"
+  "_InterleaveAct P ns1 ns2 Q" \<rightleftharpoons> "CONST ParallelAct ns1 ns2 {} P Q"
+  "_Hide P A"                  \<rightleftharpoons> "CONST Hide P A"
+  "_Rename P f"                \<rightleftharpoons> "CONST Rename P f"
+  "_ExtChoice P Q"             \<rightleftharpoons> "CONST ExtChoice P Q"
+  "_ExtChoiceIdx x A P"        \<rightleftharpoons> "CONST ExtChoiceIdx A (\<lambda> x. P)"
+  "_Interrupt P Q"             \<rightleftharpoons> "CONST Interrupt P Q"
+  "_InterleaveIter x I P"      \<rightleftharpoons> "CONST Replicate (CONST Parallel {}) Skip I (\<lambda> x. P)"
+  "_SequentialIter x I P"      \<rightleftharpoons> "CONST Replicate (CONST useq) Skip I (\<lambda> x. P)"
+  "_ParallelIter A x I P"      \<rightleftharpoons> "CONST Replicate (CONST Parallel A) Skip I (\<lambda> x. P)"
 
 end
