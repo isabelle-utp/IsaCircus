@@ -12,7 +12,8 @@ text \<open> This theory introduces an abstract syntax tree for Circus that is s
   be instantiated with concrete types. Each constant also has one or more accompanying
   syntactic constants and syntax translations, which give the mixfix notation for Circus
   actions and processes. A concrete language can implement the syntax by overloading
-  the polymorphic constants using @{command adhoc_overloading}. \<close>
+  the polymorphic constants using @{command adhoc_overloading}. Replicated operators
+  are handled generically by folding the corresponding binary operator. \<close>
 
 subsection \<open> Disable unwanted syntax \<close>
 
