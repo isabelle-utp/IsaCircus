@@ -301,13 +301,14 @@ definition origin_InputEventTrigger :: "('ch, 'st) action" where
   "origin_InputEventTrigger = originTriggered\<^bold>!(pos \<in> target arena) \<rightarrow> Skip"
 
 definition InputTriggers :: "('ch, 'st) action" where
-  "InputTriggers = found_InputEventTrigger \<lbrakk> \<^bold>0 \<parallel> \<^bold>0 \<rbrakk> origin_InputEventTrigger"
+  "InputTriggers = found_InputEventTrigger \<lbrakk> \<^bold>0 | \<^bold>0 \<rbrakk> origin_InputEventTrigger"
+
 
 definition Communication :: "('ch, 'st) action" where
   "Communication = \<mu> (\<lambda> X.
-    setVel\<^bold>?v \<rightarrow> (vel := v) ;; X
+    (setVel\<^bold>?v \<rightarrow> (vel := v) ;; X)
      \<box>
-    setAngVel\<^bold>?av \<rightarrow> (angVel := av) ;; X
+    (setAngVel\<^bold>?av \<rightarrow> (angVel := av) ;; X)
      \<box>
     proceed \<rightarrow> Skip)"
 
@@ -332,17 +333,17 @@ definition origin_Buffer :: "('ch, 'st) action" where
     originTrig := False ;; \<mu> (\<lambda> X. (
       originTriggered\<^bold>?b \<rightarrow> (originTrig := b)
        \<box>
-      (originTrig) \<^bold>& origin\<^bold>.In \<rightarrow> Skip
+      (originTrig) \<^bold>& origin\<^bold>!In \<rightarrow> Skip
     ) ;; X)"
 
 definition InputBuffers :: "('ch, 'st) action" where
-  "InputBuffers = found_Buffer \<lbrakk> foundTrig \<parallel> originTrig \<rbrakk> origin_Buffer"
+  "InputBuffers = found_Buffer \<lbrakk> foundTrig | originTrig \<rbrakk> origin_Buffer"
 
 definition Environment :: "('ch, 'st) action" where
   "Environment =
     EnvironmentLoop
       \<lbrakk> (pos, vel, acc, ori, angVel, angAcc, stepTimer, tockTimer) 
-        \<parallel> \<lbrace> foundTriggered, originTriggered \<rbrace> \<parallel>
+        | \<lbrace> foundTriggered, originTriggered \<rbrace> |
       (foundTrig, originTrig) \<rbrakk>
     InputBuffers"
 
@@ -378,16 +379,16 @@ definition land_OutputEventMapping :: "('ch, 'st) action" where
 definition Mapping :: "('ch, 'st) action" where
   "Mapping =
     move_OperationMapping
-      \<lbrakk> \<^bold>0 \<parallel> \<^bold>0 \<rbrakk>
+      \<lbrakk> \<^bold>0 | \<^bold>0 \<rbrakk>
     (turnBack_OperationMapping
-      \<lbrakk> \<^bold>0 \<parallel> \<^bold>0 \<rbrakk>
+      \<lbrakk> \<^bold>0 | \<^bold>0 \<rbrakk>
     (takeoff_OutputEventMapping
-      \<lbrakk> \<^bold>0 \<parallel> \<^bold>0 \<rbrakk>
+      \<lbrakk> \<^bold>0 | \<^bold>0 \<rbrakk>
     land_OutputEventMapping))"
 
 
 definition RescueRoboWorld :: "('ch, 'st) action" where
-  "RescueRoboWorld = Environment \<lbrakk> \<^bold>v \<parallel> \<lbrace> setVel, setAngVel, proceed \<rbrace> \<parallel> \<^bold>0 \<rbrakk> Mapping"
+  "RescueRoboWorld = Environment \<lbrakk> \<^bold>v | \<lbrace> setVel, setAngVel, proceed \<rbrace> | \<^bold>0 \<rbrakk> Mapping"
 
 end
 
@@ -466,7 +467,7 @@ ML \<open>fun testGeneration ctxt rct muts rwd n =
           fun testGenLoop ctxt mutsToCheck refiningMuts failedMuts feasibleTrs infeasibleTrs n =
             let val tracesThenAny =
                       map (fn trace => Const (@{const_name cseq}, rctType --> rctType --> rctType) $ traceToProcess rctType trace $
-                        Const (@{const_abbrev Chaos}, rctType)) (TraceSet.dest (infeasibleTrs))
+                        Const (@{const_name cChaos}, rctType)) (TraceSet.dest (infeasibleTrs))
                 val infeasibleProcess = Const (@{const_name Sup}, (HOLogic.mk_setT rctType) --> rctType) $ (HOLogic.mk_set rctType tracesThenAny)
                 val robochartPlusTraces = 
                   if null tracesThenAny then
@@ -515,11 +516,13 @@ subsection \<open>Testing the Test Generation Algorithm\<close>
 context rescueDrone
 begin
 
-term "takeoff\<^bold>.out \<rightarrow> tock\<^bold>.() \<rightarrow> tock\<^bold>.() \<rightarrow> Skip"
+term "takeoff\<^bold>.out \<rightarrow> Skip"
 
-  lemma "tock\<^bold>.() \<rightarrow> Skip \<sqsubseteq> takeoff\<^bold>.out \<rightarrow> Skip"
+term "takeoff\<^bold>.out \<rightarrow> tock \<rightarrow> tock \<rightarrow> Skip"
+
+  lemma "tock \<rightarrow> Skip \<sqsubseteq> takeoff\<^bold>.out \<rightarrow> Skip"
     nitpick
-
+    oops
 
 
 context
@@ -573,3 +576,5 @@ generate_tests_rct
   Iterations = 1
 
 print_theorems
+
+end
