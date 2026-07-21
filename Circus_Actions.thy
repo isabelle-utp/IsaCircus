@@ -7,7 +7,7 @@ theory Circus_Actions
     Circus_Renaming
     Circus_Parallel
     "Circus_Toolkit.Channels_Events"
-    "Circus_Toolkit.Action_Command"
+    "Circus_Toolkit.Recursive"
     "Circus_Toolkit.IsaCircus_Syntax"
 begin 
 
@@ -238,5 +238,40 @@ lemma
   assumes "S \<sqsubseteq> Q" "S \<sqsubseteq> R"
   shows "S \<sqsubseteq> Q \<box> R"
   by (metis assms(1,2) extchoice_idem extchoice_mono)
+
+lemma cseq_mono [mono_rule]: "\<lbrakk> P\<^sub>1 \<le> P\<^sub>2; Q\<^sub>1 \<le> Q\<^sub>2 \<rbrakk> \<Longrightarrow> cseq P\<^sub>1 Q\<^sub>1 \<le> cseq P\<^sub>2 Q\<^sub>2"
+  by (transfer, meson seqr_mono)
+
+lemma cextchoice_mono [mono_rule]: "\<lbrakk> P\<^sub>1 \<le> P\<^sub>2; Q\<^sub>1 \<le> Q\<^sub>2 \<rbrakk> \<Longrightarrow> cextchoice P\<^sub>1 Q\<^sub>1 \<le> cextchoice P\<^sub>2 Q\<^sub>2"
+  by (meson extchoice_mono ref_by_action_def)
+
+lemma PrefixCSP_mono: "\<lbrakk> \<And> x. P(x) \<sqsubseteq> Q(x) \<rbrakk> \<Longrightarrow> PrefixCSP a P \<sqsubseteq> PrefixCSP a Q"
+  by (metis PrefixCSP_dist pred_refine_iff ref_by_bool_def ref_lattice.le_iff_inf)
+
+lemma EXTCHOICE_mono:
+  "\<lbrakk> \<And> i. P(i) is NCSP; \<And> i. Q(i) is NCSP; \<And> x. P(x) \<sqsubseteq> Q(x) \<rbrakk> \<Longrightarrow> EXTCHOICE I P \<sqsubseteq> EXTCHOICE I Q"
+  apply (cases "I = {}")
+  apply (simp add: ExtChoice_empty)
+  apply (rdes_refine)
+  apply blast+
+  done
+
+lemma GuardCSP_mono: 
+  assumes "P is NCSP" "Q is NCSP" "P \<sqsubseteq> Q"
+  shows "b &\<^sub>C P \<sqsubseteq> b &\<^sub>C Q"
+  by (rdes_refine cls: assms)
+
+lemma InputCSP_mono: "\<lbrakk> \<And> i. P(i) is NCSP; \<And> i. Q(i) is NCSP; \<And> x. P(x) \<sqsubseteq> Q(x) \<rbrakk> \<Longrightarrow> InputCSP c A P \<sqsubseteq> InputCSP c A Q"
+  apply (simp add: InputCSP_def)
+  apply (rule EXTCHOICE_mono)
+    apply (simp_all add: closure)
+  apply (rule GuardCSP_mono)
+    apply (simp_all add: closure)
+  apply (rule PrefixCSP_mono)
+  apply (meson ref_by_fun_def)
+  done
+
+lemma cInput_mono [mono_rule]: "\<lbrakk> \<And> x::'a. (P x :: ('e, 's) action) \<le> Q x \<rbrakk> \<Longrightarrow> c\<^bold>?x \<rightarrow> P x \<le> c\<^bold>?x \<rightarrow> Q x"
+  by (transfer, simp, meson InputCSP_mono)
 
 end
