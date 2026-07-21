@@ -6,9 +6,9 @@ theory Circus_Actions
     Circus_Hiding
     Circus_Renaming
     Circus_Parallel
-    IsaCircus_Syntax
     "Circus_Toolkit.Channels_Events"
     "Circus_Toolkit.Action_Command"
+    "Circus_Toolkit.IsaCircus_Syntax"
 begin 
 
 unbundle no lattice_syntax
@@ -35,6 +35,10 @@ lift_definition cspec :: "('a \<Longrightarrow> 's) \<Rightarrow> 's pred \<Righ
 lift_definition cassume :: "('s \<Rightarrow> \<bool>) \<Rightarrow> ('e, 's) action" is AssumeCircus by (simp add: closure)
 lift_definition ccond :: "('e, 's) action \<Rightarrow> (bool, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
   is "\<lambda> P b Q. P \<triangleleft> b \<triangleright>\<^sub>R Q" by (simp add: closure)
+
+lift_definition caltern_list :: "(('s \<Rightarrow> bool) \<times> ('e, 's) action) list \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is AlternateR_list
+  by (rule AlternateR_list_NCSP_closed)
+     (metis (no_types, lifting) Ball_set pred_prod_beta snd_conv)+
 
 lift_definition cextchoice :: "('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" is "\<lambda> P Q. extChoice P Q"
   by (simp add: closure)
@@ -77,6 +81,7 @@ adhoc_overloading
   uassigns \<rightleftharpoons> cassigns and
   useq \<rightleftharpoons> cseq and
   ucond \<rightleftharpoons> ccond and
+  ualtern_list \<rightleftharpoons> caltern_list and
   ExtChoice \<rightleftharpoons> cextchoice and
   ExtChoiceIdx \<rightleftharpoons> cExtChoiceIdx and
   Rename \<rightleftharpoons> crename and
