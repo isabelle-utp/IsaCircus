@@ -55,9 +55,9 @@ is "\<lambda> ns1 ns2 cs P Q. if ns1 \<bowtie> ns2 then P \<parallel>\<^bsub>M\<
 lift_definition cparallel :: "'e set \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action"
 is "\<lambda> cs P Q. P \<lbrakk>cs\<rbrakk>\<^sub>C Q" by (simp add: closure)
 
-lift_definition cinput :: "('a, 'e) channel \<Rightarrow> ('a \<Rightarrow> (('s \<Rightarrow> bool) \<times> ('e, 's) action)) \<Rightarrow> ('e, 's) action"
-  is "\<lambda> c BP. InputCSP c (\<lambda> v. fst (BP v)) (\<lambda> v. (snd (BP v)))"
-  by (simp add: InputCSP_NCSP pred_prod_beta) 
+lift_definition cinput :: "('a, 'e) channel \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> (('s \<Rightarrow> bool) \<times> ('e, 's) action)) \<Rightarrow> ('e, 's) action"
+  is "\<lambda> c A BP. InputCSP c (\<lambda> v s. v \<in> A \<and> fst (BP v) s) (\<lambda> v. (snd (BP v)))"
+  by (simp add: InputCSP_NCSP pred_prod_beta)
 
 lift_definition coutput :: "('a, 'e) channel \<Rightarrow> ('a, 's) expr \<Rightarrow> ('e, 's) action \<Rightarrow> ('e, 's) action" 
   is OutputCSP by (simp add: closure)
